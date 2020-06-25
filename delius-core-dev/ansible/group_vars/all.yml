@@ -40,3 +40,6 @@ autotask_windows:
         weekday:
                 start_time: "06:20"
                 duration_mins: 30
+database_parameters:
+   processes: 300
+   sga_target: 1G

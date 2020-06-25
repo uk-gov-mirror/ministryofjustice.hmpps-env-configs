@@ -1,4 +1,4 @@
 --- # delius_standbydb2.yml
 
-database_standby_unique: DNDAS2
-database_standby_sid: DNDAS2
+database_standby_unique: THINGS2
+database_standby_sid: THINGS2
