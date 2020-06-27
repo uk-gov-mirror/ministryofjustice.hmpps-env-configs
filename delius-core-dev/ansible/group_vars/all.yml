@@ -44,3 +44,4 @@ database_parameters:
    processes: 300
    sga_max_size: 1G
    sga_target: 1G
+   db_recovery_file_dest_size: 8G
