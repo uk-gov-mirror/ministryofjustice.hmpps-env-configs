@@ -1,0 +1,39 @@
+---
+github_org: ministryofjustice
+github_repos:
+  infra:
+    alfresco: hmpps-delius-alfresco-shared-terraform
+    engineering: hmpps-engineering-platform-terraform
+  common:
+    purge: hmpps-accounts-refresh
+    pipelines: hmpps-aws-migration-pipelines
+  alfresco:
+    versions: hmpps-alfresco-infra-versions
+    packer: hmpps-alfresco-packer
+github_token_ssm: /manually/created/engineering/dev/codepipeline/github/accesstoken
+github_username_ssm: /jenkins/github/username
+github_password_ssm: /jenkins/github/password
+source_credentials_ssm: /codebuild/github/credentials-arn
+
+s3buckets:
+  common:
+    artefacts: hmpps-eng-builds-artefact
+
+env_configs:
+  alfresco:
+    dev: "{{ lookup('aws_ssm', '/env_configs/alfresco/alfresco-dev') }}"
+    core_dev: "{{ lookup('aws_ssm', '/env_configs/alfresco/delius-core-dev') }}"
+    potest1: "{{ lookup('aws_ssm', '/env_configs/alfresco/delius-po-test') }}"
+    test: "{{ lookup('aws_ssm', '/env_configs/alfresco/delius-test') }}"
+    stage: "{{ lookup('aws_ssm', '/env_configs/alfresco/delius-stage') }}"
+    prod: "{{ lookup('aws_ssm', '/env_configs/alfresco/delius-prod') }}"
+
+cron:
+  alfresco:
+    dev: cron(0 18 * * ? *)
+    prod: cron(0 21 * * ? *)
+    stage: cron(0 19 * * ? *)
+
+ecr_images:
+  ten10:
+    test: 895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/ten10-serenity-tests

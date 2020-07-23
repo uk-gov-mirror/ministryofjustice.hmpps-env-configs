@@ -1,0 +1,27 @@
+[
+    {
+        "name": "ENVIRONMENT_NAME",
+        "value": "delius-test",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "ARTEFACTS_BUCKET",
+        "value": "maven-s3-releases-repo",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "TASK_NAME",
+        "value": "test",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "COMPOSE_FILE_NAME",
+        "value": "docker-compose.yml",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "TEST_DOCKER_IMAGE",
+        "value": "{{ ecr_images.ten10.test }}",
+        "type": "PLAINTEXT"
+    }
+]

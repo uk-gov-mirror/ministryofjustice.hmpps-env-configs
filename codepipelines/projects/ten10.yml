@@ -1,0 +1,13 @@
+---
+- name: set ten10 facts
+  set_fact:
+    infra_prefix: "ten10-serenity"
+    github_repo: ndelius-serenity-automation
+    ssm_tasks_prefix: /codebuild/alfresco/tasks
+
+- name: create pipeline for ten10 testing
+  include: projects/ten10/serenity.yml
+  vars:
+    environment_name: delius-test
+    env_configs_version: "master"
+    schedule_expression: "{{ cron.alfresco.dev }}"

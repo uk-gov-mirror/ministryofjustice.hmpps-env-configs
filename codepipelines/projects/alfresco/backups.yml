@@ -1,0 +1,127 @@
+---
+
+- name: "render prepare vars for {{ infra_prefix }}-{{ environment_name }}"
+  set_fact:
+    prepare_vars: "{{ lookup('template', 'templates/alfresco/prepare_vars.json.j2') }}"
+
+- name: set content fact
+  set_fact:
+    alf_task_name: content
+
+- name: "render content vars for {{ infra_prefix }}-{{ environment_name }}"
+  set_fact:
+    content_vars: "{{ lookup('template', 'templates/alfresco/backup/task_vars.json.j2') }}"
+
+- name: set database fact
+  set_fact:
+    alf_task_name: psql
+
+- name: "render database vars for {{ infra_prefix }}-{{ environment_name }}"
+  set_fact:
+    database_vars: "{{ lookup('template', 'templates/alfresco/backup/task_vars.json.j2') }}"
+
+- name: setelasticsearch fact
+  set_fact:
+    alf_task_name: elasticsearch
+
+- name: "render elasticsearch vars for {{ infra_prefix }}-{{ environment_name }}"
+  set_fact:
+   elasticsearch_vars: "{{ lookup('template', 'templates/alfresco/backup/task_vars.json.j2') }}"
+
+- name: "backup pipeline {{ infra_prefix }}-{{ environment_name }}"
+  aws_codepipeline:
+    name: "{{ infra_prefix }}-{{ environment_name }}-backup"
+    role_arn: "{{ iam_role_arn }}"
+    artifact_store:
+      type: S3
+      location: "{{ s3_bucket_name }}"
+    stages:
+      - name: Get_source
+        actions:
+          -
+            name: Source
+            actionTypeId:
+              category: Source
+              owner: ThirdParty
+              provider: GitHub
+              version: '1'
+            outputArtifacts:
+            - { name: source_output }
+            configuration:
+              Owner: "{{ github_org }}"
+              Repo: "{{ github_repo }}"
+              Branch: "develop"
+              PollForSourceChanges: "False"
+              OAuthToken: "{{ github_token }}"
+            runOrder: 1
+      - name: "generate-configs"
+        actions:
+          -
+            name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: '1'
+            inputArtifacts:
+              - { name: source_output }
+            configuration:
+              ProjectName: "alfresco-prepare"
+              EnvironmentVariables: "{{ prepare_vars | to_json }}"
+            runOrder: 1
+      - name: "content-backup"
+        actions:
+          -
+            name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: '1'
+            inputArtifacts:
+              - { name: source_output }
+            configuration:
+              ProjectName: "alfresco-task-handler"
+              EnvironmentVariables: "{{ content_vars | to_json }}"
+            runOrder: 2
+      - name: "database-backup"
+        actions:
+          -
+            name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: '1'
+            inputArtifacts:
+              - { name: source_output }
+            configuration:
+              ProjectName: "alfresco-task-handler"
+              EnvironmentVariables: "{{ database_vars | to_json }}"
+            runOrder: 2
+      - name: "elasticsearch-backup"
+        actions:
+          -
+            name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: '1'
+            inputArtifacts:
+              - { name: source_output }
+            configuration:
+              ProjectName: "alfresco-task-handler"
+              EnvironmentVariables: "{{ elasticsearch_vars | to_json }}"
+            runOrder: 2
+  no_log: true
+
+- name: "backup schedule {{ infra_prefix }}-{{ environment_name }}"
+  cloudwatchevent_rule:
+    name: "{{ infra_prefix }}-{{ environment_name }}-backup"
+    schedule_expression: "{{ schedule_expression }}"
+    description: "Run {{ infra_prefix }}-{{ environment_name }} backup task"
+    targets:
+      - id: Codepipeline
+        arn: "arn:aws:codepipeline:{{ region }}:{{ account_id }}:{{ infra_prefix }}-{{ environment_name }}-backup"
+        role_arn: "{{ iam_role_arn }}"

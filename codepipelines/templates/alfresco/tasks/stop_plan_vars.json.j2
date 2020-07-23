@@ -1,0 +1,37 @@
+[
+    {
+        "name": "ENVIRONMENT_NAME",
+        "value": "{{ environment_name }}",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "GITHUB_REPO",
+        "value": "{{ github_repo }}",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "GITHUB_ORG",
+        "value": "{{ github_org }}",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "ARTEFACTS_BUCKET",
+        "value": "{{ s3buckets.common.artefacts }}",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "TF_VAR_restoring",
+        "value": "enabled",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "ACTION_TYPE",
+        "value": "plan",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "PACKAGE_NAME",
+        "value": "alfresco-terraform.tar",
+        "type": "PLAINTEXT"
+    }
+]

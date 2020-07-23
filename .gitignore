@@ -1,0 +1,23 @@
+.venv
+**/*.pyc
+**/*__pycache__
+env_configs
+**/*.terraform
+*plan_ret
+
+#  Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+*.plan
+*.out
+**/backend.tf
+**/provider.tf
+
+.idea
+*.iml
+*.iws
+
+.DS_Store

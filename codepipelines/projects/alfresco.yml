@@ -1,0 +1,61 @@
+---
+- name: set alfresco facts
+  set_fact:
+    infra_prefix: "alf-infra"
+    tasks_prefix: "alf-tasks"
+    github_repo: "{{ github_repos.infra.alfresco }}"
+    ssm_tasks_prefix: /codebuild/alfresco/tasks
+
+- name: create pipeline for alfresco dev environments backup
+  include: projects/alfresco/backups.yml
+  vars:
+    environment_name: "{{ item }}"
+    env_configs_version: master
+    schedule_expression: "{{ cron.alfresco.dev }}"
+    days_to_delete: 28
+  with_items:
+    - alfresco-dev
+    - delius-training
+    - delius-training-test
+
+- name: create pipeline for alfresco stage backups
+  include: projects/alfresco/backups.yml
+  vars:
+    environment_name: delius-stage
+    env_configs_version: "{{ env_configs.alfresco.stage }}"
+    schedule_expression: "{{ cron.alfresco.stage }}"
+    days_to_delete: 180
+
+- name: create pipeline for alfresco prod backups
+  include: projects/alfresco/backups.yml
+  vars:
+    environment_name: delius-prod
+    env_configs_version: "{{ env_configs.alfresco.prod }}"
+    schedule_expression: "{{ cron.alfresco.prod }}"
+    days_to_delete: 365
+
+- name: create pipeline for ansible role esadmin
+  include: projects/alfresco/ansible_role.yml
+  vars:
+    ansible_role_name: hmpps-ansible-esadmin-role
+
+- name: create alfresco packer pipeline
+  include: projects/alfresco/packer.yml
+  vars:
+    github_repo: "{{ github_repos.alfresco.packer }}"
+
+- name: create restore database pipeline for dev environments
+  include: projects/alfresco/restore_database_non_prod.yml
+  vars:
+    environment_name: "{{ item }}"
+  with_items:
+    - alfresco-dev
+
+- name: create restore database pipeline for prod environments
+  include: projects/alfresco/restore_database_prod.yml
+  vars:
+    environment_name: "{{ item }}"
+    github_repo: "{{ github_repos.alfresco.versions }}"
+  with_items:
+    - delius-stage
+    - delius-perf

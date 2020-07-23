@@ -1,0 +1,38 @@
+[
+    {
+        "name": "ENVIRONMENT_NAME",
+        "value": "{{ environment_name }}",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "ARTEFACTS_BUCKET",
+        "value": "{{ s3buckets.common.artefacts }}",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "GITHUB_REPO",
+        "value": "{{ github_repo }}",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "SSM_TASKS_PREFIX",
+        "value": "{{ ssm_tasks_prefix }}",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "TASK_NAME",
+        "value": "{{ alf_task_name }}",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "COMPOSE_FILE_NAME",
+        "value": "docker-compose-alfresco-backup.yml",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "DAYS_TO_DELETE",
+        "value": "{{ days_to_delete }}",
+        "type": "PLAINTEXT"
+    }
+
+]

@@ -1,0 +1,27 @@
+[
+    {
+        "name": "ENVIRONMENT_NAME",
+        "value": "{{ environment_name }}",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "COMPONENT",
+        "value": "{{ component_target }}",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "ARTEFACTS_BUCKET",
+        "value": "{{ s3buckets.common.artefacts }}",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "PACKAGE_NAME",
+        "value": "alfresco-terraform.tar",
+        "type": "PLAINTEXT"
+    },
+    {
+        "name": "CREATE_SNAPSHOT",
+        "value": "{{ create_snapshot }}",
+        "type": "PLAINTEXT"
+    }
+]

@@ -1,0 +1,27 @@
+---
+version: 0.2
+
+env:
+  variables:
+    ENG_REPO: "hmpps-engineering-platform-terraform"
+    ENVIRONMENT_NAME: "dev"
+  parameter-store:
+    HMPPS_GITHUB_USER: "/jenkins/github/username"
+    GITHUB_TOKEN: "/manually/created/engineering/dev/codepipeline/github/accesstoken"
+
+phases:
+  pre_build:
+    commands:
+      - rm -rf env_configs ${ENG_REPO}
+      - git clone https://${HMPPS_GITHUB_USER}:${GITHUB_TOKEN}@github.com/ministryofjustice/${ENG_REPO}.git
+      - mv ${ENG_REPO}/env_configs env_configs
+      - rm -rf ${ENG_REPO}
+      - sed -i "s/admin/terraform/g" env_configs/dev.properties
+  build:
+    commands:
+      - export HMPPS_BUILD_WORK_DIR=${CODEBUILD_SRC_DIR}
+      - make terraform component=common
+      - make terraform component=alfresco/base
+      - make terraform component=alfresco/pipelines/refresh_environment
+      - make terraform component=alfresco/pipelines/infrastructure
+      - make terraform component=ten10

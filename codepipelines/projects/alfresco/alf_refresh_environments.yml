@@ -1,0 +1,199 @@
+---
+- name: setup create snapshot fact
+  set_fact:
+    create_snapshot: no
+    action_type: build
+    component_target: database_snapshot
+
+- name: "render environment vars for {{ tasks_prefix }}-{{ environment_name }}"
+  set_fact:
+    apply_vars: "{{ lookup('template', 'templates/alfresco/apply_vars.json.j2') }}"
+    stop_apply_vars: "{{ lookup('template', 'templates/alfresco/tasks/stop_apply_vars.json.j2') }}"
+    info_vars: "{{ lookup('template', 'templates/alfresco/tasks/ansible_refresh_vars.json.j2') }}"
+
+- name: update create snapshot fact
+  set_fact:
+    create_snapshot: yes
+    action_type: destroy
+
+- name: "render snapshot vars for {{ tasks_prefix }}-{{ environment_name }}"
+  set_fact:
+    snapshot_vars: "{{ lookup('template', 'templates/alfresco/tasks/ansible_refresh_vars.json.j2') }}"
+    destroy_vars: "{{ lookup('template', 'templates/alfresco/apply_vars.json.j2') }}"
+    component_target: content_refresh
+
+- name: "render content-sync vars for {{ tasks_prefix }}-{{ environment_name }}"
+  set_fact:
+    content_sync_vars: "{{ lookup('template', 'templates/alfresco/tasks/ansible_refresh_vars.json.j2') }}"
+
+- name: "environment refresh pipeline {{ tasks_prefix }}-{{ environment_name }}"
+  aws_codepipeline:
+    name: "{{ tasks_prefix }}-{{ environment_name }}-refresh-environment"
+    role_arn: "{{ iam_role_arn }}"
+    artifact_store:
+      type: S3
+      location: "{{ s3_bucket_name }}"
+    stages:
+      - name: get-source-code
+        actions:
+          - name: code
+            actionTypeId:
+              category: Source
+              owner: ThirdParty
+              provider: GitHub
+              version: "1"
+            outputArtifacts:
+              - { name: code }
+            configuration:
+              Owner: "{{ github_org }}"
+              Repo: "hmpps-delius-alfresco-shared-terraform"
+              Branch: "develop"
+              PollForSourceChanges: "False"
+              OAuthToken: "{{ github_token }}"
+            runOrder: 1
+          - name: versions
+            actionTypeId:
+              category: Source
+              owner: ThirdParty
+              provider: GitHub
+              version: "1"
+            outputArtifacts:
+              - { name: versions }
+            configuration:
+              Owner: "{{ github_org }}"
+              Repo: "hmpps-alfresco-infra-versions"
+              Branch: "develop"
+              PollForSourceChanges: "False"
+              OAuthToken: "{{ github_token }}"
+            runOrder: 1
+      - name: "database-{{ environment_name }}-details"
+        actions:
+          - name: show-database-target
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: code }
+            configuration:
+              ProjectName: "hmpps-eng-builds-ansible3"
+              EnvironmentVariables: "{{ info_vars | to_json }}"
+            runOrder: 1
+      - name: approve-{{ environment_name }}-refresh
+        actions:
+          - name: Approval
+            actionTypeId:
+              category: Approval
+              owner: AWS
+              provider: Manual
+              version: "1"
+            configuration:
+              CustomData: "Please review and approve change to proceed? Note this is a destructive task"
+            runOrder: 1
+      - name: "stage-1-{{ environment_name }}-prepare"
+        actions:
+          - name: start-esadmin
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: code }
+            configuration:
+              ProjectName: "alfresco-refresh"
+              EnvironmentVariables: "{{ apply_vars | to_json }}"
+            runOrder: 1
+          - name: stop-services
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: versions }
+            configuration:
+              ProjectName: "alfresco-services"
+              EnvironmentVariables: "{{ stop_apply_vars | to_json }}"
+            runOrder: 1
+          - name: create-rds-snapshot
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: code }
+            configuration:
+              ProjectName: "hmpps-eng-builds-ansible3"
+              EnvironmentVariables: "{{ snapshot_vars | to_json }}"
+            runOrder: 1
+      - name: "stage-2-{{ environment_name }}-refresh-tasks"
+        actions:
+          - name: content-sync
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: code }
+            configuration:
+              ProjectName: "hmpps-eng-builds-ansible3"
+              EnvironmentVariables: "{{ content_sync_vars | to_json }}"
+            runOrder: 1
+          - name: restore-database
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: code }
+            configuration:
+              ProjectName: "alfresco-databases"
+              EnvironmentVariables: "{{ apply_vars | to_json }}"
+            runOrder: 1
+      - name: approve-{{ environment_name }}-service-start
+        actions:
+          - name: Approval
+            actionTypeId:
+              category: Approval
+              owner: AWS
+              provider: Manual
+              version: "1"
+            configuration:
+              CustomData: "Please review and approve change to proceed?"
+            runOrder: 1
+      - name: "stage-3-{{ environment_name }}-final"
+        actions:
+          - name: start-services
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: versions }
+            configuration:
+              ProjectName: "alfresco-services"
+              EnvironmentVariables: "{{ apply_vars | to_json }}"
+            runOrder: 1
+          - name: stop-esadmin
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: code }
+            configuration:
+              ProjectName: "alfresco-refresh"
+              EnvironmentVariables: "{{ destroy_vars | to_json }}"
+            runOrder: 1
+  no_log: false
+
+- name: reset action type var
+  set_fact:
+    action_type: build

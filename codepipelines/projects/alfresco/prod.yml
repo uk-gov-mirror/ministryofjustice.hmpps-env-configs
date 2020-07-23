@@ -1,0 +1,230 @@
+---
+- name: "render environment vars for {{ infra_prefix }}-{{ environment_name }}"
+  set_fact:
+    plan_vars: "{{ lookup('template', 'templates/alfresco/plan_vars.json.j2') }}"
+    apply_vars: "{{ lookup('template', 'templates/alfresco/apply_vars.json.j2') }}"
+    web_hook_name: "{{ infra_prefix }}-{{ environment_name }}-webhook"
+
+- name: "create pipeline {{ infra_prefix }}-{{ environment_name }}"
+  aws_codepipeline:
+    name: "{{ infra_prefix }}-{{ environment_name }}"
+    role_arn: "{{ iam_role_arn }}"
+    artifact_store:
+      type: S3
+      location: "{{ s3_bucket_name }}"
+    stages:
+      - name: Get_source
+        actions:
+          - name: Source
+            actionTypeId:
+              category: Source
+              owner: ThirdParty
+              provider: GitHub
+              version: "1"
+            outputArtifacts:
+              - { name: source_output }
+            configuration:
+              Owner: "{{ github_org }}"
+              Repo: "{{ github_repo }}"
+              Branch: "develop"
+              PollForSourceChanges: "False"
+              OAuthToken: "{{ github_token }}"
+            runOrder: 1
+      - name: "{{ environment_name }}-prereqs-plan"
+        actions:
+          - name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: source_output }
+            configuration:
+              ProjectName: "alfresco-prereqs"
+              EnvironmentVariables: "{{ plan_vars |to_json }}"
+            runOrder: 1
+      - name: approve-prereqs
+        actions:
+          - name: Approval
+            actionTypeId:
+              category: Approval
+              owner: AWS
+              provider: Manual
+              version: "1"
+            configuration:
+              CustomData: "Please review and approve change to proceed?"
+            runOrder: 1
+      - name: "{{ environment_name }}-prereqs-apply"
+        actions:
+          - name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: source_output }
+            configuration:
+              ProjectName: "alfresco-prereqs"
+              EnvironmentVariables: "{{ apply_vars | to_json }}"
+            runOrder: 1
+      - name: "{{ environment_name }}-storage-plan"
+        actions:
+          - name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: source_output }
+            configuration:
+              ProjectName: "alfresco-storage"
+              EnvironmentVariables: "{{ plan_vars | to_json }}"
+            runOrder: 1
+      - name: approve-storage
+        actions:
+          - name: Approval
+            actionTypeId:
+              category: Approval
+              owner: AWS
+              provider: Manual
+              version: "1"
+            configuration:
+              CustomData: "Please review and approve change to proceed?"
+            runOrder: 1
+      - name: "{{ environment_name }}-storage-apply"
+        actions:
+          - name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: source_output }
+            configuration:
+              ProjectName: "alfresco-storage"
+              EnvironmentVariables: "{{ apply_vars | to_json }}"
+            runOrder: 1
+      - name: "{{ environment_name }}-databases-plan"
+        actions:
+          - name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: source_output }
+            configuration:
+              ProjectName: "alfresco-databases"
+              EnvironmentVariables: "{{ plan_vars | to_json }}"
+            runOrder: 1
+      - name: approve-databases
+        actions:
+          - name: Approval
+            actionTypeId:
+              category: Approval
+              owner: AWS
+              provider: Manual
+              version: "1"
+            configuration:
+              CustomData: "Please review and approve change to proceed?"
+            runOrder: 1
+      - name: "{{ environment_name }}-databases-apply"
+        actions:
+          - name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: source_output }
+            outputArtifacts:
+              - { name: "{{ environment_name }}-databases" }
+            configuration:
+              ProjectName: "alfresco-databases"
+              EnvironmentVariables: "{{ apply_vars | to_json }}"
+            runOrder: 1
+      - name: "{{ environment_name }}-services-plan"
+        actions:
+          - name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: source_output }
+            configuration:
+              ProjectName: "alfresco-services"
+              EnvironmentVariables: "{{ plan_vars | to_json }}"
+            runOrder: 1
+      - name: approve-services
+        actions:
+          - name: Approval
+            actionTypeId:
+              category: Approval
+              owner: AWS
+              provider: Manual
+              version: "1"
+            configuration:
+              CustomData: "Please review and approve change to proceed?"
+            runOrder: 1
+      - name: "{{ environment_name }}-services-apply"
+        actions:
+          - name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: source_output }
+            configuration:
+              ProjectName: "alfresco-services"
+              EnvironmentVariables: "{{ apply_vars | to_json }}"
+            runOrder: 1
+      - name: "{{ environment_name }}-monitoring-plan"
+        actions:
+          - name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: source_output }
+            configuration:
+              ProjectName: "alfresco-monitoring"
+              EnvironmentVariables: "{{ plan_vars | to_json }}"
+            runOrder: 1
+      - name: approve-monitoring
+        actions:
+          - name: Approval
+            actionTypeId:
+              category: Approval
+              owner: AWS
+              provider: Manual
+              version: "1"
+            configuration:
+              CustomData: "Please review and approve change to proceed?"
+            runOrder: 1
+      - name: "{{ environment_name }}-monitoring-apply"
+        actions:
+          - name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: source_output }
+            configuration:
+              ProjectName: "alfresco-monitoring"
+              EnvironmentVariables: "{{ apply_vars | to_json }}"
+            runOrder: 1
+  no_log: true

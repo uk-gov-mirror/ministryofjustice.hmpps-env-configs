@@ -1,0 +1,51 @@
+---
+- name: Create
+  hosts: localhost
+  connection: local
+  vars_files:
+    - vars/pipeline-vars.yml
+  tasks:
+    - name: set common name value
+      set_fact:
+        common_name: "{{ lookup('env', 'TF_VAR_business_unit') }}-{{ lookup('env', 'TF_VAR_project') }}-builds"
+
+    - name: create_bucket_data
+      s3_bucket:
+        name: "{{ common_name }}"
+        state: present
+      register: s3_bucket_info
+
+    - name: get iam role info
+      iam_role_info:
+        name: "{{ common_name }}"
+      register: iam_role_info
+
+    - name: get github token
+      set_fact:
+        github_token: "{{ lookup('aws_ssm', github_token_ssm ) }}"
+      no_log: true
+
+    - name: Get the current caller identity information
+      aws_caller_info:
+      register: caller_info
+
+    - name: set_pipeline_facts
+      set_fact:
+        s3_bucket_name: "{{ s3_bucket_info.name }}"
+        iam_role_arn: "{{ iam_role_info.iam_roles[0].arn }}"
+        project_name: "{{ common_name }}-terraform"
+        tags: "{{ s3_bucket_info.tags }}"
+        account_id: "{{ caller_info.account }}"
+        region: "{{ lookup('env', 'TG_REGION') }}"
+
+    - name: create base pipeline jobs
+      include: projects/common/main.yml
+
+    - name: import GitHub access token into CodeBuild and store the ARN in parameter store
+      include: projects/common/credentials/github.yml
+
+    - name: create alfresco pipelines
+      include: projects/alfresco.yml
+
+    - name: create ten10 pipelines
+      include: projects/ten10.yml

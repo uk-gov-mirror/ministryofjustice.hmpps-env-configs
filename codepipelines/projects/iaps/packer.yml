@@ -1,0 +1,47 @@
+---
+- name: "render prepare vars for {{ infra_prefix }}-{{ environment_name }}"
+  set_fact:
+    packer_vars: "{{ lookup('template', 'templates/iaps/packer_vars.json.j2') }}"
+
+- name: "iaps packer pipeline"
+  aws_codepipeline:
+    name: "alf-packer-builder"
+    role_arn: "{{ iam_role_arn }}"
+    artifact_store:
+      type: S3
+      location: "{{ s3_bucket_name }}"
+    stages:
+      - name: Get_source
+        actions:
+          - name: Source
+            actionTypeId:
+              category: Source
+              owner: ThirdParty
+              provider: GitHub
+              version: "1"
+            outputArtifacts:
+              - { name: source_output }
+            configuration:
+              Owner: "{{ github_org }}"
+              Repo: "{{ github_repo }}"
+              Branch: "develop"
+              PollForSourceChanges: "False"
+              OAuthToken: "{{ github_token }}"
+            runOrder: 1
+      - name: "build-ami"
+        actions:
+          - name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: source_output }
+            outputArtifacts:
+              - { name: props_output }
+            configuration:
+              ProjectName: "iaps-ami-packer"
+              EnvironmentVariables: "{{ packer_vars | to_json }}"
+            runOrder: 1
+  no_log: true

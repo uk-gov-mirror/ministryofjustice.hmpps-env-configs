@@ -1,0 +1,46 @@
+---
+- name: "render environment vars for {{ role_name }}"
+  set_fact:
+    environment_vars: "{{ lookup('template', 'templates/ansible_role/environment_vars.json.j2') }}"
+
+- name: "{{ ansible_role_name }}-pipeline"
+  aws_codepipeline:
+    name: "ansible-{{ ansible_role_name }}"
+    role_arn: "{{ iam_role_arn }}"
+    artifact_store:
+      type: S3
+      location: "{{ s3_bucket_name }}"
+    stages:
+      - name: Get_source
+        actions:
+          -
+            name: Source
+            actionTypeId:
+              category: Source
+              owner: ThirdParty
+              provider: GitHub
+              version: '1'
+            outputArtifacts:
+            - { name: source_output }
+            configuration:
+              Owner: "{{ github_org }}"
+              Repo: "{{ ansible_role_name }}"
+              Branch: "master"
+              PollForSourceChanges: "False"
+              OAuthToken: "{{ github_token }}"
+            runOrder: 1
+      - name: "test-role"
+        actions:
+          -
+            name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: '1'
+            inputArtifacts:
+              - { name: source_output }
+            configuration:
+              ProjectName: "hmpps-eng-builds-python3"
+              EnvironmentVariables: "{{ environment_vars | to_json }}"
+            runOrder: 1

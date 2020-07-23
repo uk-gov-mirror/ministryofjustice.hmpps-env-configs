@@ -1,0 +1,7 @@
+---
+- name: create pipeline for all environments
+  include: pipelines/pipelines.yml
+  vars:
+    github_repo: "{{ github_repos.common.pipelines }}"
+    environment_name: eng-dev
+    prefix: create-pipelines

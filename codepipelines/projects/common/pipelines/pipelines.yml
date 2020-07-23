@@ -1,0 +1,57 @@
+---
+- name: "create pipeline {{ prefix }}-{{ environment_name }}"
+  aws_codepipeline:
+    name: "{{ prefix }}-{{ environment_name }}"
+    role_arn: "{{ iam_role_arn }}"
+    artifact_store:
+      type: S3
+      location: "{{ s3_bucket_name }}"
+    stages:
+      - name: Get_source
+        actions:
+          - name: Source
+            actionTypeId:
+              category: Source
+              owner: ThirdParty
+              provider: GitHub
+              version: "1"
+            outputArtifacts:
+              - { name: source_output }
+            configuration:
+              Owner: "{{ github_org }}"
+              Repo: "{{ github_repo }}"
+              Branch: "develop"
+              PollForSourceChanges: "True"
+              OAuthToken: "{{ github_token }}"
+            runOrder: 1
+      - name: "{{ environment_name }}-pipelines"
+        actions:
+          - name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: source_output }
+            outputArtifacts:
+              - { name: "{{ environment_name }}-pipelines-tf" }
+            configuration:
+              ProjectName: "{{ common_name }}-pipelines"
+            runOrder: 1
+      - name: "{{ environment_name }}-ansible"
+        actions:
+          - name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: source_output }
+            outputArtifacts:
+              - { name: "{{ environment_name }}-pipelines-ansible3" }
+            configuration:
+              ProjectName: "{{ common_name }}-ansible3"
+            runOrder: 1
+  no_log: true

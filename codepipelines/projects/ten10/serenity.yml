@@ -1,0 +1,54 @@
+---
+- name: "render pipeline vars for {{ infra_prefix }}-{{ environment_name }}"
+  set_fact:
+    pipeline_vars: "{{ lookup('template', 'templates/ten10/task_vars.json.j2') }}"
+
+- name: "Serenity test pipeline {{ infra_prefix }}-{{ environment_name }}"
+  aws_codepipeline:
+    name: "{{ infra_prefix }}-{{ environment_name }}"
+    role_arn: "{{ iam_role_arn }}"
+    artifact_store:
+      type: S3
+      location: "{{ s3_bucket_name }}"
+    stages:
+      - name: Get_source
+        actions:
+          - name: Source
+            actionTypeId:
+              category: Source
+              owner: ThirdParty
+              provider: GitHub
+              version: "1"
+            outputArtifacts:
+              - { name: source_output }
+            configuration:
+              Owner: "{{ github_org }}"
+              Repo: "{{ github_repo }}"
+              Branch: "ALS-578"
+              PollForSourceChanges: "False"
+              OAuthToken: "{{ github_token }}"
+            runOrder: 1
+      - name: "build-image"
+        actions:
+          - name: Build
+            actionTypeId:
+              category: Build
+              owner: AWS
+              provider: CodeBuild
+              version: "1"
+            inputArtifacts:
+              - { name: source_output }
+            configuration:
+              ProjectName: "ten10-task-handler"
+              EnvironmentVariables: "{{ pipeline_vars | to_json }}"
+            runOrder: 2
+  no_log: true
+# - name: "backup schedule {{ infra_prefix }}-{{ environment_name }}"
+#   cloudwatchevent_rule:
+#     name: "{{ infra_prefix }}-{{ environment_name }}-backup"
+#     schedule_expression: "{{ schedule_expression }}"
+#     description: "Run {{ infra_prefix }}-{{ environment_name }} backup task"
+#     targets:
+#       - id: Codepipeline
+#         arn: "arn:aws:codepipeline:{{ region }}:{{ account_id }}:{{ infra_prefix }}-{{ environment_name }}-backup"
+#         role_arn: "{{ iam_role_arn }}"
