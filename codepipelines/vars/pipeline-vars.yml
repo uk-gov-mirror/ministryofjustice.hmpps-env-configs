@@ -6,7 +6,7 @@ github_repos:
     engineering: hmpps-engineering-platform-terraform
   common:
     purge: hmpps-accounts-refresh
-    pipelines: hmpps-aws-migration-pipelines
+    pipelines: hmpps-engineering-pipelines
   alfresco:
     versions: hmpps-alfresco-infra-versions
     packer: hmpps-alfresco-packer
