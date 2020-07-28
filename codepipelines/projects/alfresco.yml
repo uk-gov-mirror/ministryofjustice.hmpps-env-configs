@@ -43,19 +43,3 @@
   include: projects/alfresco/packer.yml
   vars:
     github_repo: "{{ github_repos.alfresco.packer }}"
-
-- name: create restore database pipeline for dev environments
-  include: projects/alfresco/restore_database_non_prod.yml
-  vars:
-    environment_name: "{{ item }}"
-  with_items:
-    - alfresco-dev
-
-- name: create restore database pipeline for prod environments
-  include: projects/alfresco/restore_database_prod.yml
-  vars:
-    environment_name: "{{ item }}"
-    github_repo: "{{ github_repos.alfresco.versions }}"
-  with_items:
-    - delius-stage
-    - delius-perf
