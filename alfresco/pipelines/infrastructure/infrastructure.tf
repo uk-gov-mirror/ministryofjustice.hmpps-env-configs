@@ -32,16 +32,20 @@ module "protected-envs" {
   iam_role_arn     = local.iam_role_arn
   repo_name        = "hmpps-alfresco-infra-versions"
   repo_branch      = "develop"
-  environments = [
-    "delius-training-test",
-    "delius-training",
-    "delius-test",
-    "delius-po-test1",
-    "delius-stage",
-    "delius-pre-prod",
-    "delius-perf",
-    "delius-prod"
-  ]
-  tags     = var.tags
-  projects = local.projects
+  environments     = local.protected_envs
+  tags             = var.tags
+  projects         = local.projects
+}
+
+module "release-pipeline" {
+  source           = "../../modules/pipelines/releases"
+  artefacts_bucket = local.artefacts_bucket
+  pipeline_bucket  = local.pipeline_bucket
+  prefix           = "alf-release"
+  iam_role_arn     = local.iam_role_arn
+  repo_name        = "hmpps-alfresco-infra-versions"
+  repo_branch      = "develop"
+  environments     = local.protected_envs
+  tags             = var.tags
+  projects         = local.projects
 }
