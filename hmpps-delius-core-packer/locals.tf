@@ -30,70 +30,33 @@ locals {
         namespace        = "SourceVariables"
         configuration = {
           Owner                = "ministryofjustice"
-          Repo                 = "hmpps-base-packer"
+          Repo                 = "hmpps-delius-core-packer"
           Branch               = "master"
           PollForSourceChanges = true
         }
       }
   }
   
-  codebuild_project_names_stage_1_linux = {
-    "Centos7"      = "${local.common_name}-centos7"
-    "AmazonLinux"  = "${local.common_name}-amazonlinux"
-    "AmazonLinux2" = "${local.common_name}-amazonlinux2"
-    "KaliLinux"    = "${local.common_name}-kalilinux"
+  codebuild_project_names_stage_1 = {
+    "weblogic"      = "${local.common_name}-weblogic"
+    "oracle-db"     = "${local.common_name}-oracle-db"
+    "oracle-db-11g" = "${local.common_name}-oracle-db-11g"
+    "oracle-client" = "${local.common_name}-oracle-client"
   }
   
-  codebuild_project_names_stage_2_linux = {
-    "Centos7Docker"             = "${local.common_name}-centos7-docker"
-    "AmazonLinux2Jira"          = "${local.common_name}-amazonlinux2-jira"
-    "AmazonLinux2JenkinsAgent"  = "${local.common_name}-amazonlinux2-jenkins-agent"
+  codebuild_project_names_stage_2 = {
+    "weblogic-admin"      = "${local.common_name}-weblogic-admin"
   }
-
-  codebuild_project_names_stage_3_linux = {
-    "Centos7DockerECS"           = "${local.common_name}-centos7-docker-ecs"
-    "Centos7DockerJenkinsAgent" = "${local.common_name}-centos7-docker-jenkins-agent"
-  }
-
-  codebuild_project_names_all_linux = merge(
-    local.codebuild_project_names_stage_1_linux,
-    local.codebuild_project_names_stage_2_linux,
-    local.codebuild_project_names_stage_3_linux
-  )
-
-  #=====================================
-  # CodePipeline - Windows AMI Projects
-  #=====================================
-  codebuild_project_names_stage_1_windows = {
-    "WindowsBase"      = "${local.common_name}-windows-base"
-  }
-
-  codebuild_project_names_stage_2_windows = {
-    "WindowsJenkinsAgent" = "${local.common_name}-windows-jenkins-agent"
-    "WindowsMISNart"       = "${local.common_name}-windows-misnart"
-  }
-
-  codebuild_project_names_stage_3_windows = {
-    "WindowsMISNartBCS" = "${local.common_name}-windows-misnart-bcs"
-    "WindowsMISNartBFS" = "${local.common_name}-windows-misnart-bfs"
-  }
-
-  codebuild_project_names_all_windows = merge(
-    local.codebuild_project_names_stage_1_windows,
-    local.codebuild_project_names_stage_2_windows,
-    local.codebuild_project_names_stage_3_windows
-  )
 
   codebuild_project_names_all = merge(
-    local.codebuild_project_names_all_linux,
-    local.codebuild_project_names_all_windows
+    local.codebuild_project_names_stage_1,
+    local.codebuild_project_names_stage_2 
   )
 
- 
   #======================
   # CodeBuild - General
   #======================
-  common_name    = "hmpps-base-packer-builder"
+  common_name    = "hmpps-delius-core-packer-builder"
   build_timeout  = "120"
   queued_timeout = "30"
   service_role   = data.terraform_remote_state.common.outputs.codebuild_info["iam_role_arn_packer_ami_builder"]
@@ -106,7 +69,7 @@ locals {
   #======================
 
   group_name  = data.terraform_remote_state.common.outputs.codebuild_info["log_group"]
-  // stream_name = "hmpps-base-packer-ami-bake"
+  // stream_name = "hmpps-delius-core-packer-ami-bake"
 
   #======================
   # CodeBuild - General

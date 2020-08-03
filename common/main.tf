@@ -16,6 +16,7 @@ locals {
   images = {
     terraform = var.code_build["terraform_image"]
     ansible3  = var.code_build["ansible3_image"]
+    packer    = var.code_build["packer_image"]
   }
   type = "LINUX_CONTAINER"
 }

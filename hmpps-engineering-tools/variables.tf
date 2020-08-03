@@ -22,12 +22,8 @@ variable "code_build" {
   type = map(string)
   default = {
     github_org          = "ministryofjustice"
-    infra_repo          = "hmpps-delius-alfresco-shared-terraform"
-    # jenkins_token_ssm   = "/jenkins/github/accesstoken"
     artifact_expiration = 90
-    terraform_image     = "mojdigitalstudio/hmpps-terraform-builder-lite:latest"
     docker_image        = "mojdigitalstudio/hmpps-docker-compose"
-    python_image        = "mojdigitalstudio/hmpps-ansible-builder-python-3"
     packer_image        = "mojdigitalstudio/hmpps-packer-builder:0.2.3"
   }
 }

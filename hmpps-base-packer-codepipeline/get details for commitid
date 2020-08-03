@@ -1,0 +1,14 @@
+get details for commitid
+
+curl -s "https://api.github.com/search/commits?q=5a654a83c0dc184c6902c44deec8ad816c796cf0" -H "Accept: application/vnd.github.cloak-preview" | jq '.'
+
+get sha
+curl -s "https://api.github.com/search/commits?q=5a654a83c0dc184c6902c44deec8ad816c796cf0" -H "Accept: application/vnd.github.cloak-preview" | jq -r '.items[0].sha'
+
+
+get tags
+curl -s https://api.github.com/repos/ministryofjustice/hmpps-base-packer/tags
+
+get latest tag
+curl -s https://api.github.com/repos/ministryofjustice/hmpps-base-packer/tags | jq '.[0].name'
+

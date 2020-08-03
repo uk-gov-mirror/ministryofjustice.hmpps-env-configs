@@ -23,7 +23,6 @@ variable "code_build" {
   default = {
     github_org          = "ministryofjustice"
     infra_repo          = "hmpps-delius-alfresco-shared-terraform"
-    # jenkins_token_ssm   = "/jenkins/github/accesstoken"
     artifact_expiration = 90
     terraform_image     = "mojdigitalstudio/hmpps-terraform-builder-lite:latest"
     docker_image        = "mojdigitalstudio/hmpps-docker-compose"
@@ -32,5 +31,3 @@ variable "code_build" {
   }
 }
 
-variable "github_webhook_secret" {
-}

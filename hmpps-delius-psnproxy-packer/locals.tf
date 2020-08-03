@@ -10,7 +10,7 @@ locals {
   #======================
   # CodeBuild - General
   #======================
-  common_name    = "hmpps-delius-iaps-packer-builder"
+  common_name    = "hmpps-delius-psnproxy-packer-builder"
   build_timeout  = "45"
   queued_timeout = "30"
   service_role   = data.terraform_remote_state.common.outputs.codebuild_info["iam_role_arn_packer_ami_builder"]
@@ -23,7 +23,7 @@ locals {
   #======================
 
   group_name  = data.terraform_remote_state.common.outputs.codebuild_info["log_group"]
-  stream_name = "hmpps-delius-iaps-packer-ami-bake"
+  stream_name = "hmpps-delius-psnproxy-packer-ami-bake"
 
   #======================
   # CodeBuild - General
@@ -37,14 +37,14 @@ locals {
   #======================
   build_source = {
     type                = "GITHUB"
-    location           = "https://github.com/ministryofjustice/hmpps-delius-iaps-packer.git"
+    location           = "https://github.com/ministryofjustice/hmpps-delius-psnproxy-packer.git"
     git_clone_depth     = 0
     insecure_ssl        = false
     report_build_status = false
     git_submodules_config = {
       fetch_submodules = false
     }
-    buildspec = "buildspec-docker.yml"
+    buildspec = "buildspec.yml"
   }
 
   #======================
@@ -86,7 +86,7 @@ locals {
 
   
   project_names = {
-    ami_build       = "hmpps-delius-iaps-packer-ami-build"
+    ami_build       = "hmpps-delius-psnproxy-packer-ami-build"
   }
     
 }
