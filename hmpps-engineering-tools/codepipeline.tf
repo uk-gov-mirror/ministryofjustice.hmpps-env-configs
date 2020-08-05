@@ -81,7 +81,32 @@ resource "aws_codepipeline" "codepipeline_hmpps_engineering_tools" {
   #       }
   #   }
   # }
-    
+  
+  # stage {
+  #   name = "build-all-images"
+
+  #   action {
+  #       name             = "build-all-images"
+  #       category         = "Build"
+  #       owner            = "AWS"
+  #       provider         = "CodeBuild"
+  #       input_artifacts  = local.code_stage.action.output_artifacts
+  #       version          = "1"
+  #       configuration = {
+  #         ProjectName = "build-all-images"
+  #         EnvironmentVariables = jsonencode([
+  #           for e in local.build_environment_spec.environment_variables:
+  #           {
+  #             name  = e.key
+  #             value = e.value
+  #             type  = "PLAINTEXT"
+  #           } 
+  #         ])
+  #       }
+  #       run_order  = 1
+  #   }
+  # }
+
   stage {
     name = "build-base-images"
 
@@ -139,12 +164,10 @@ resource "aws_codepipeline" "codepipeline_hmpps_engineering_tools" {
     }
 
   }
-
-
+  
   # stage('Ansible base dependant images') {
   stage {
     name = "build-ansible-base-dependant-images"
-
     dynamic "action" {
       for_each = local.codebuild_project_names_stage_3_docker
       content {
@@ -168,9 +191,7 @@ resource "aws_codepipeline" "codepipeline_hmpps_engineering_tools" {
         run_order  = 1
       }
     }
-
   }
-  
   
   # stage('Nginx base dependant images') {
   stage {
@@ -201,6 +222,7 @@ resource "aws_codepipeline" "codepipeline_hmpps_engineering_tools" {
     }
 
   }
+
   # stage('base-java dependant images') {
   stage {
     name = "build-base-java-dependant-images"
@@ -259,6 +281,7 @@ resource "aws_codepipeline" "codepipeline_hmpps_engineering_tools" {
     }
 
   }
+
   # stage('Python 3 base dependant images') {
   stage {
     name = "build-python-3-base-dependant-images"
@@ -288,6 +311,7 @@ resource "aws_codepipeline" "codepipeline_hmpps_engineering_tools" {
     }
 
   }
+  
   # stage('Non Dependant Images') {
   stage {
     name = "build-non-dependant-images"
