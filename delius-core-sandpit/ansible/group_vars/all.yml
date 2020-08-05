@@ -47,3 +47,4 @@ autotask_windows:
 database_parameters:
    processes: 1000
    sessions: 1522
+   sga_target: 3G
