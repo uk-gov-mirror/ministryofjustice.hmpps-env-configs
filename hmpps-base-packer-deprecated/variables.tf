@@ -27,7 +27,7 @@ variable "code_build" {
     terraform_image     = "mojdigitalstudio/hmpps-terraform-builder-lite:latest"
     docker_image        = "mojdigitalstudio/hmpps-docker-compose"
     python_image        = "mojdigitalstudio/hmpps-ansible-builder-python-3"
-    packer_image        = "mojdigitalstudio/hmpps-packer-builder"
+    packer_image        = "mojdigitalstudio/hmpps-packer-builder:0.2.3"
   }
 }
 
