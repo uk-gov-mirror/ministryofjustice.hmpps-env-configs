@@ -1,10 +1,10 @@
 
 // # Wire the CodePipeline webhook into a GitHub repository for linux AMI builds
-resource "github_repository_webhook" "github_repository_webhook_hmpps_delius_core_packer" {
+resource "github_repository_webhook" "github_repository_webhook_hmpps_base_packer_linux_prbranch" {
   repository = data.github_repository.hmpps_base_packer.name
 
   configuration {
-    url          = aws_codepipeline_webhook.codepipeline_webhooks_hmpps_delius_core_packer.url
+    url          = aws_codepipeline_webhook.codepipeline_webhooks_hmpps_base_packer_linux_prbranch.url
     content_type = "json"
     insecure_ssl = false
     secret = var.github_webhook_secret  
@@ -20,11 +20,11 @@ resource "github_repository_webhook" "github_repository_webhook_hmpps_delius_cor
 // https://www.terraform.io/docs/providers/aws/r/codepipeline_webhook.html
 
 # webhook into codepipeline to build linux AMIs
-resource "aws_codepipeline_webhook" "codepipeline_webhooks_hmpps_delius_core_packer" {
-  name            = "github-webhooks-hmpps-delius-corer-packer"
+resource "aws_codepipeline_webhook" "codepipeline_webhooks_hmpps_base_packer_linux_prbranch" {
+  name            = "github-webhooks-hmpps-base-packer-linux-prbranch"
   authentication  = "GITHUB_HMAC"
   target_action   = local.sourcecode_action_name
-  target_pipeline = aws_codepipeline.codepipeline_hmpps_delius_core_packer.name
+  target_pipeline = aws_codepipeline.codepipeline_hmpps_base_packer_linux.name
 
   authentication_configuration {
     secret_token = var.github_webhook_secret   # TF_VAR_github_webhook_secret
@@ -34,5 +34,4 @@ resource "aws_codepipeline_webhook" "codepipeline_webhooks_hmpps_delius_core_pac
     json_path    = "$.ref"
     match_equals = "refs/heads/{Branch}"
   }
-
 }

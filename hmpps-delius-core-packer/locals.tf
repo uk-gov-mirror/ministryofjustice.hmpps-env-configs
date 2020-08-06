@@ -32,7 +32,7 @@ locals {
           Owner                = "ministryofjustice"
           Repo                 = "hmpps-delius-core-packer"
           Branch               = "master"
-          PollForSourceChanges = true
+          PollForSourceChanges = false # use git webhook
         }
       }
   }
@@ -41,6 +41,7 @@ locals {
     "weblogic"      = "${local.common_name}-weblogic"
     "oracle-db"     = "${local.common_name}-oracle-db"
     "oracle-db-11g" = "${local.common_name}-oracle-db-11g"
+    "oracle-db-18c" = "${local.common_name}-oracle-db-18c"
     "oracle-client" = "${local.common_name}-oracle-client"
   }
   
