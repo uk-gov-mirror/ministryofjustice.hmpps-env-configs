@@ -19,7 +19,7 @@ resource "aws_codebuild_webhook" "github_webhooks_hmpps_delius_core_packer_19c" 
   filter_group {
     filter {
       type    = "EVENT"
-      pattern = "PUSH"
+      pattern = "PUSH, PULL_REQUEST_CREATED, PULL_REQUEST_UPDATED, PULL_REQUEST_REOPENED"   # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/codebuild_webhook#filter_group
     }
 
     filter {
@@ -28,6 +28,9 @@ resource "aws_codebuild_webhook" "github_webhooks_hmpps_delius_core_packer_19c" 
     }
   }
 }
+
+
+
 
 // # Wire the CodePipeline webhook into a GitHub repository for linux AMI builds
 resource "github_repository_webhook" "github_repository_webhook_hmpps_delius_core_packer_19c" {
