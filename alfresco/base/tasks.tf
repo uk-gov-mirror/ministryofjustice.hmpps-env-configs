@@ -40,7 +40,7 @@ resource "aws_codebuild_project" "tasks" {
     }
   }
   vpc_config {
-    vpc_id = local.vpc_id
+    vpc_id  = local.vpc_id
     subnets = local.private_subnet_ids
 
     security_group_ids = [
@@ -49,3 +49,41 @@ resource "aws_codebuild_project" "tasks" {
   }
 }
 
+# AWS
+resource "aws_codebuild_project" "tasks_aws" {
+  name           = "alfresco-docker-tasks"
+  description    = "alfresco-docker-tasks"
+  build_timeout  = 30
+  queued_timeout = 30
+  service_role   = data.terraform_remote_state.common.outputs.codebuild_info["iam_role_arn"]
+  tags = merge(
+    local.tags,
+    {
+      "Name" = "alfresco-docker-tasks"
+    },
+  )
+  count = length(local.tasks_list)
+
+  logs_config {
+    cloudwatch_logs {
+      group_name  = data.terraform_remote_state.common.outputs.codebuild_info["log_group"]
+      stream_name = "alfresco-docker-tasks"
+    }
+  }
+
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+
+  source {
+    type      = "CODEPIPELINE"
+    buildspec = "pipelines/ops-alfresco-task-handler.yml"
+  }
+
+  environment {
+    compute_type    = local.compute_type
+    image           = "aws/codebuild/amazonlinux2-x86_64-standard:3.0"
+    type            = local.type
+    privileged_mode = true
+  }
+}
