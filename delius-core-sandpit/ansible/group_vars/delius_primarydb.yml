@@ -2,8 +2,8 @@
 
 database_global_database: SANNDA
 database_taf_service: SANNDA_TAF
-database_primary_unique: SANNDA
-database_primary_sid: SANNDA
+database_primary_unique: SANNDAS1
+database_primary_sid: SANNDAS1
 oracle_osbws_chunk_size: 104857600
 delius_users:
   dfuller_ro:
