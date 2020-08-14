@@ -356,6 +356,48 @@ resource "aws_codepipeline" "refresh" {
         )
       }
     }
+    action {
+      name            = "solr-snapshot"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 1
+      configuration = {
+        ProjectName   = local.projects["ansible"]
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "ENVIRONMENT_NAME",
+              "value" : each.key,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "build",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : local.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PACKAGE_NAME",
+              "value" : "alfresco-terraform.tar",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "COMPONENT",
+              "value" : "ansible/ebs/snapshot",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
   }
   stage {
     name = format("approve-%s-services-start", each.key)
@@ -373,6 +415,48 @@ resource "aws_codepipeline" "refresh" {
   }
   stage {
     name = format("stage-3-%s-final", each.key)
+    action {
+      name            = "set-solr-ebs-snapshot-id"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 1
+      configuration = {
+        ProjectName   = local.projects["ansible"]
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "ENVIRONMENT_NAME",
+              "value" : each.key,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "COMPONENT",
+              "value" : "ansible/ebs/param_store",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : local.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "ansible",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PACKAGE_NAME",
+              "value" : "alfresco-terraform.tar",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
     action {
       name            = "destroy-refresh-components"
       input_artifacts = ["code"]
@@ -422,7 +506,7 @@ resource "aws_codepipeline" "refresh" {
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
-      run_order       = 1
+      run_order       = 2
       configuration = {
         ProjectName   = local.projects["terraform"]
         PrimarySource = "versions"
@@ -464,7 +548,7 @@ resource "aws_codepipeline" "refresh" {
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
-      run_order       = 1
+      run_order       = 2
       configuration = {
         ProjectName   = local.projects["terraform"]
         PrimarySource = "versions"
