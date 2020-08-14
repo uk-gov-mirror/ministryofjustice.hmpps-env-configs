@@ -1,6 +1,5 @@
 resource "aws_codepipeline" "pipeline" {
-  for_each = toset(var.environments)
-  name     = format("${var.prefix}-%s", each.key)
+  name     = "${var.prefix}-functions-builder"
   role_arn = var.iam_role_arn
   tags     = var.tags
 
@@ -22,14 +21,14 @@ resource "aws_codepipeline" "pipeline" {
         Owner                = var.repo_owner
         Repo                 = var.repo_name
         Branch               = var.repo_branch
-        PollForSourceChanges = false
+        PollForSourceChanges = true
       }
     }
   }
   stage {
-    name = format("%s-prereqs", each.key)
+    name = "Docker"
     action {
-      name            = "ami_permissions_plan"
+      name            = "python-builder"
       input_artifacts = ["code"]
       category        = "Build"
       owner           = "AWS"
@@ -37,71 +36,13 @@ resource "aws_codepipeline" "pipeline" {
       version         = "1"
       run_order       = 1
       configuration = {
-        ProjectName   = var.projects["terraform"]
+        ProjectName   = "alfresco-docker-tasks"
         PrimarySource = "code"
         EnvironmentVariables = jsonencode(
           [
             {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
               "name" : "COMPONENT",
-              "value" : "ami_permissions",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ACTION_TYPE",
-              "value" : "plan",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-    action {
-      name      = "approve-apply"
-      category  = "Approval"
-      owner     = "AWS"
-      provider  = "Manual"
-      version   = "1"
-      run_order = 2
-      configuration = {
-        CustomData = "Please review plans and approve to proceed?"
-      }
-    }
-    action {
-      name            = "ami_permissions_apply"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 3
-      configuration = {
-        ProjectName   = var.projects["terraform"]
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "COMPONENT",
-              "value" : "ami_permissions",
+              "value" : "python-builder",
               "type" : "PLAINTEXT"
             },
             {
@@ -115,8 +56,8 @@ resource "aws_codepipeline" "pipeline" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
+              "name" : "BUILD_IMAGE",
+              "value" : "mojdigitalstudio/hmpps-lambda-python-builder",
               "type" : "PLAINTEXT"
             }
           ]
@@ -124,26 +65,21 @@ resource "aws_codepipeline" "pipeline" {
       }
     }
     action {
-      name            = "set-solr-ebs-snapshot-id"
+      name            = "content-refresh"
       input_artifacts = ["code"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
-      run_order       = 3
+      run_order       = 1
       configuration = {
-        ProjectName   = var.projects["ansible"]
+        ProjectName   = "alfresco-docker-tasks"
         PrimarySource = "code"
         EnvironmentVariables = jsonencode(
           [
             {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
               "name" : "COMPONENT",
-              "value" : "ansible/ebs/param_store",
+              "value" : "content-refresh",
               "type" : "PLAINTEXT"
             },
             {
@@ -153,12 +89,12 @@ resource "aws_codepipeline" "pipeline" {
             },
             {
               "name" : "ACTION_TYPE",
-              "value" : "ansible",
+              "value" : "build",
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
+              "name" : "BUILD_IMAGE",
+              "value" : "mojdigitalstudio/redis-s3-sync",
               "type" : "PLAINTEXT"
             }
           ]
@@ -167,9 +103,9 @@ resource "aws_codepipeline" "pipeline" {
     }
   }
   stage {
-    name = format("%s-services", each.key)
+    name = "Boto3"
     action {
-      name            = "alfresco_plan"
+      name            = "boto3"
       input_artifacts = ["code"]
       category        = "Build"
       owner           = "AWS"
@@ -177,18 +113,13 @@ resource "aws_codepipeline" "pipeline" {
       version         = "1"
       run_order       = 1
       configuration = {
-        ProjectName   = var.projects["terraform"]
+        ProjectName   = "alfresco-docker-tasks"
         PrimarySource = "code"
         EnvironmentVariables = jsonencode(
           [
             {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
               "name" : "COMPONENT",
-              "value" : "asg",
+              "value" : "boto3",
               "type" : "PLAINTEXT"
             },
             {
@@ -198,12 +129,7 @@ resource "aws_codepipeline" "pipeline" {
             },
             {
               "name" : "ACTION_TYPE",
-              "value" : "plan",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
+              "value" : "package",
               "type" : "PLAINTEXT"
             }
           ]
@@ -211,7 +137,79 @@ resource "aws_codepipeline" "pipeline" {
       }
     }
     action {
-      name            = "solr_plan"
+      name            = "s3RestoreSubmit"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 2
+      configuration = {
+        ProjectName   = "alfresco-docker-tasks"
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "COMPONENT",
+              "value" : "s3RestoreSubmit",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "package",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "BASE_PKG",
+              "value" : "boto3",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+    action {
+      name            = "s3RestoreWorker"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 2
+      configuration = {
+        ProjectName   = "alfresco-docker-tasks"
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "COMPONENT",
+              "value" : "s3RestoreWorker",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "package",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+  }
+  stage {
+    name = "Support"
+    action {
+      name            = "content-refresh"
       input_artifacts = ["code"]
       category        = "Build"
       owner           = "AWS"
@@ -219,18 +217,13 @@ resource "aws_codepipeline" "pipeline" {
       version         = "1"
       run_order       = 1
       configuration = {
-        ProjectName   = var.projects["terraform"]
+        ProjectName   = "alfresco-docker-tasks"
         PrimarySource = "code"
         EnvironmentVariables = jsonencode(
           [
             {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
               "name" : "COMPONENT",
-              "value" : "solr",
+              "value" : "content-refresh",
               "type" : "PLAINTEXT"
             },
             {
@@ -240,12 +233,7 @@ resource "aws_codepipeline" "pipeline" {
             },
             {
               "name" : "ACTION_TYPE",
-              "value" : "plan",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
+              "value" : "package",
               "type" : "PLAINTEXT"
             }
           ]
@@ -253,37 +241,21 @@ resource "aws_codepipeline" "pipeline" {
       }
     }
     action {
-      name      = "approve-apply"
-      category  = "Approval"
-      owner     = "AWS"
-      provider  = "Manual"
-      version   = "1"
-      run_order = 2
-      configuration = {
-        CustomData = "Please review plans and approve to proceed?"
-      }
-    }
-    action {
-      name            = "alfresco_apply"
+      name            = "alert_handler"
       input_artifacts = ["code"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
-      run_order       = 3
+      run_order       = 1
       configuration = {
-        ProjectName   = var.projects["terraform"]
+        ProjectName   = "alfresco-docker-tasks"
         PrimarySource = "code"
         EnvironmentVariables = jsonencode(
           [
             {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
               "name" : "COMPONENT",
-              "value" : "asg",
+              "value" : "alert_handler",
               "type" : "PLAINTEXT"
             },
             {
@@ -293,96 +265,7 @@ resource "aws_codepipeline" "pipeline" {
             },
             {
               "name" : "ACTION_TYPE",
-              "value" : "build",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-    action {
-      name            = "solr_apply"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 3
-      configuration = {
-        ProjectName   = var.projects["terraform"]
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "COMPONENT",
-              "value" : "solr",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ACTION_TYPE",
-              "value" : "build",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-    action {
-      name            = "solr-phase-2"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 4
-      configuration = {
-        ProjectName   = var.projects["terraform"]
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "COMPONENT",
-              "value" : "solr",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ACTION_TYPE",
-              "value" : "build",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
+              "value" : "package",
               "type" : "PLAINTEXT"
             }
           ]

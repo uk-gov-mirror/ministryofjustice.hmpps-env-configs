@@ -250,7 +250,7 @@ resource "aws_codepipeline" "pipeline" {
             },
             {
               "name" : "COMPONENT",
-              "value" : "ansible/rds/delete_instance/playbook.yml",
+              "value" : "ansible/rds/delete_instance",
               "type" : "PLAINTEXT"
             },
             {
@@ -303,7 +303,7 @@ resource "aws_codepipeline" "pipeline" {
             },
             {
               "name" : "COMPONENT",
-              "value" : "ansible/rds/delete_instance/playbook.yml",
+              "value" : "ansible/rds/delete_instance",
               "type" : "PLAINTEXT"
             },
             {

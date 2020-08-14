@@ -48,7 +48,7 @@ resource "aws_codebuild_project" "pipelines" {
 resource "aws_codebuild_project" "ansible3" {
   name           = "${local.common_name}-ansible3"
   description    = local.common_name
-  build_timeout  = "30"
+  build_timeout  = "60"
   queued_timeout = "30"
   service_role   = aws_iam_role.codebuild.arn
   tags = merge(

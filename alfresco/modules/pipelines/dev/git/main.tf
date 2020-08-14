@@ -65,6 +65,48 @@ resource "aws_codepipeline" "pipeline" {
         )
       }
     }
+    action {
+      name            = "set-solr-ebs-snapshot-id"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 1
+      configuration = {
+        ProjectName   = var.projects["ansible"]
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "ENVIRONMENT_NAME",
+              "value" : each.key,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "COMPONENT",
+              "value" : "ansible/ebs/param_store",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "ansible",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PACKAGE_NAME",
+              "value" : "alfresco-terraform.tar",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
   }
   stage {
     name = format("%s-prereqs", each.key)
