@@ -43,7 +43,7 @@ database_autotasks:
 autotask_windows:
         weekday:
                 start_time: "06:20"
-                duration_mins: 30
+                duration_mins: 35
 database_parameters:
    processes: 1004
    sessions: 1522
