@@ -45,5 +45,5 @@ autotask_windows:
                 start_time: "06:20"
                 duration_mins: 30
 database_parameters:
-   processes: 1000
+   processes: 1004
    sessions: 1522
