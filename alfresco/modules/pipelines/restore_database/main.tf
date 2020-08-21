@@ -231,66 +231,13 @@ resource "aws_codepipeline" "pipeline" {
   stage {
     name = format("%s-database-destroy", each.key)
     action {
-      name            = "preview_destroy"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 1
-      configuration = {
-        ProjectName   = var.projects["ansible"]
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "COMPONENT",
-              "value" : "ansible/rds/delete_instance",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ACTION_TYPE",
-              "value" : "ansible",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "DELETE_DB_INSTANCE",
-              "value" : "no",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-    action {
-      name      = "approve-destroy"
-      category  = "Approval"
-      owner     = "AWS"
-      provider  = "Manual"
-      version   = "1"
-      run_order = 2
-      configuration = {
-        CustomData = "This will delete the database instance! Please review and approve to proceed? "
-      }
-    }
-    action {
       name            = "database_destroy"
       input_artifacts = ["code"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
-      run_order       = 3
+      run_order       = 1
       configuration = {
         ProjectName   = var.projects["ansible"]
         PrimarySource = "code"
@@ -320,46 +267,6 @@ resource "aws_codepipeline" "pipeline" {
               "name" : "DELETE_DB_INSTANCE",
               "value" : "yes",
               "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-  }
-  stage {
-    name = format("%s-database-restore", each.key)
-    action {
-      name            = "database_plan"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 1
-      configuration = {
-        ProjectName   = var.projects["terraform"]
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "COMPONENT",
-              "value" : "database",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ACTION_TYPE",
-              "value" : "plan",
-              "type" : "PLAINTEXT"
             },
             {
               "name" : "PACKAGE_NAME",
@@ -370,17 +277,9 @@ resource "aws_codepipeline" "pipeline" {
         )
       }
     }
-    action {
-      name      = "approve-apply"
-      category  = "Approval"
-      owner     = "AWS"
-      provider  = "Manual"
-      version   = "1"
-      run_order = 2
-      configuration = {
-        CustomData = "Please review plans and approve to proceed?"
-      }
-    }
+  }
+  stage {
+    name = format("%s-database-restore", each.key)
     action {
       name            = "database_apply"
       input_artifacts = ["code"]
@@ -388,7 +287,7 @@ resource "aws_codepipeline" "pipeline" {
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
-      run_order       = 3
+      run_order       = 1
       configuration = {
         ProjectName   = var.projects["terraform"]
         PrimarySource = "code"
@@ -427,108 +326,13 @@ resource "aws_codepipeline" "pipeline" {
   stage {
     name = format("%s-services-start", each.key)
     action {
-      name            = "alfresco_plan"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 1
-      configuration = {
-        ProjectName   = var.projects["terraform"]
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "COMPONENT",
-              "value" : "asg",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ACTION_TYPE",
-              "value" : "plan",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-    action {
-      name            = "solr_plan"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 1
-      configuration = {
-        ProjectName   = var.projects["terraform"]
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "COMPONENT",
-              "value" : "solr",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ACTION_TYPE",
-              "value" : "plan",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-    action {
-      name      = "approve-apply"
-      category  = "Approval"
-      owner     = "AWS"
-      provider  = "Manual"
-      version   = "1"
-      run_order = 2
-      configuration = {
-        CustomData = "Please review plans and approve to proceed?"
-      }
-    }
-    action {
       name            = "alfresco_apply"
       input_artifacts = ["code"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
-      run_order       = 3
+      run_order       = 1
       configuration = {
         ProjectName   = var.projects["terraform"]
         PrimarySource = "code"
@@ -570,7 +374,7 @@ resource "aws_codepipeline" "pipeline" {
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
-      run_order       = 3
+      run_order       = 1
       configuration = {
         ProjectName   = var.projects["terraform"]
         PrimarySource = "code"
