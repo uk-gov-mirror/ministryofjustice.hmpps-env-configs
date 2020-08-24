@@ -40,7 +40,7 @@ variable "code_build" {
     artifact_expiration = 180
     terraform_image     = "mojdigitalstudio/hmpps-terraform-builder-0-12"
     ansible3_image      = "mojdigitalstudio/hmpps-ansible-builder-python-3"
-    packer_image        = "mojdigitalstudio/hmpps-packer-builder"
+    packer_image        = "mojdigitalstudio/hmpps-packer-builder:0.2.3"
   }
 }
 

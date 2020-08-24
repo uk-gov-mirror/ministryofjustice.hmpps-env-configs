@@ -1,8 +1,8 @@
 // https://www.terraform.io/docs/providers/aws/r/codepipeline.html
 
-resource "aws_codepipeline" "codepipeline_hmpps_base_packer_windows" {
+resource "aws_codepipeline" "codepipeline_hmpps_base_packer_linux_prbranch" {
 
-  name     = "hmpps-base-packer-windows-image-builder"
+  name     = "hmpps-base-packer-linux-image-builder-prbranch"
   role_arn = local.codepipeline_builder_role
 
   artifact_store {
@@ -23,8 +23,8 @@ resource "aws_codepipeline" "codepipeline_hmpps_base_packer_windows" {
       configuration = {
         Owner                = local.code_stage.action.configuration.Owner
         Repo                 = local.code_stage.action.configuration.Repo
-        Branch               = local.code_stage.action.configuration.Branch
-        PollForSourceChanges = local.code_stage.action.configuration.PollForSourceChanges
+        Branch               = "dummybranchname"
+        PollForSourceChanges = false
         // OAuthToken           = local.code_stage.action.configuration.OAuthToken
       }
     }
@@ -34,73 +34,8 @@ resource "aws_codepipeline" "codepipeline_hmpps_base_packer_windows" {
     name = "Build-Packer-Base-AMIS"
 
     dynamic "action" {
-      for_each = local.codebuild_project_names_stage_1_windows
-      content {
-        name             = "Build${action.value}"
-        category         = "Build"
-        owner            = "AWS"
-        provider         = "CodeBuild"
-        input_artifacts  = local.code_stage.action.output_artifacts
-        version          = "1"
-        configuration = {
-          ProjectName = action.value
-          
-          EnvironmentVariables = jsonencode([
-            for e in local.build_environment_spec.environment_variables:
-            {
-              name  = e.key
-              value = e.value
-              type  = "PLAINTEXT"
-            } 
-          ])
-          
-        }
-        run_order  = 1
-      }
-    }
-
-  }
-
-
-  stage {
-    name = "Build-Windows-Base-Dependent-AMIs"
-
-    dynamic "action" {
       
-      for_each = local.codebuild_project_names_stage_2_windows
-     
-      content {
-        name             = "Build${action.value}"
-        category         = "Build"
-        owner            = "AWS"
-        provider         = "CodeBuild"
-        input_artifacts  = local.code_stage.action.output_artifacts
-        version          = "1"
-        configuration = {
-          ProjectName = action.value
-
-          EnvironmentVariables = jsonencode([
-            for e in local.build_environment_spec.environment_variables:
-            {
-              name  = e.key
-              value = e.value
-              type  = "PLAINTEXT"
-            } 
-          ])
-
-        }
-        run_order  = 1
-      }
-
-    }
-  }
-
-  stage {
-    name = "Build-MIS-Dependant-AMIs"
-
-    dynamic "action" {
-      
-      for_each = local.codebuild_project_names_stage_3_windows
+      for_each = local.codebuild_project_names_stage_1_linux
      
       content {
         name             = "Build${action.value}"
@@ -121,6 +56,77 @@ resource "aws_codepipeline" "codepipeline_hmpps_base_packer_windows" {
             } 
           ])
           
+        }
+        run_order  = 1
+      }
+
+    }
+  }
+
+  stage {
+    name = "Build-Centos-Docker-And-Amazon-Linux-2-Dependent-AMIs"
+
+    dynamic "action" {
+      
+      for_each = local.codebuild_project_names_stage_2_linux
+     
+      content {
+        name             = "Build${action.value}"
+        category         = "Build"
+        owner            = "AWS"
+        provider         = "CodeBuild"
+        input_artifacts  = local.code_stage.action.output_artifacts
+        version          = "1"
+        configuration = {
+          ProjectName = action.value
+          # EnvironmentVariables = jsonencode([
+          # {
+          #   name = "ENVIRONMENT"
+          #   type = "PLAINTEXT"
+          #   value = "test"
+          # }
+          # ])
+
+          EnvironmentVariables = jsonencode([
+            for e in local.build_environment_spec.environment_variables:
+            {
+              name  = e.key
+              value = e.value
+              type  = "PLAINTEXT"
+            } 
+          ])
+
+        }
+        run_order  = 1
+      }
+
+    }
+  }
+
+  stage {
+    name = "Build-Centos-Docker-Dependant-AMIs"
+
+    dynamic "action" {
+      
+      for_each = local.codebuild_project_names_stage_3_linux
+     
+      content {
+        name             = "Build${action.value}"
+        category         = "Build"
+        owner            = "AWS"
+        provider         = "CodeBuild"
+        input_artifacts  = local.code_stage.action.output_artifacts
+        version          = "1"
+        configuration = {
+          ProjectName = action.value
+          EnvironmentVariables = jsonencode([
+            for e in local.build_environment_spec.environment_variables:
+            {
+              name  = e.key
+              value = e.value
+              type  = "PLAINTEXT"
+            } 
+          ])
         }
         run_order  = 1
       }

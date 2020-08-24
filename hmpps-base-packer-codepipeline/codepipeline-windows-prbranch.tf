@@ -1,8 +1,8 @@
 // https://www.terraform.io/docs/providers/aws/r/codepipeline.html
 
-resource "aws_codepipeline" "codepipeline_hmpps_base_packer_windows" {
+resource "aws_codepipeline" "codepipeline_hmpps_base_packer_windows_prbranch" {
 
-  name     = "hmpps-base-packer-windows-image-builder"
+  name     = "hmpps-base-packer-windows-image-builder-prbranch"
   role_arn = local.codepipeline_builder_role
 
   artifact_store {
@@ -23,8 +23,8 @@ resource "aws_codepipeline" "codepipeline_hmpps_base_packer_windows" {
       configuration = {
         Owner                = local.code_stage.action.configuration.Owner
         Repo                 = local.code_stage.action.configuration.Repo
-        Branch               = local.code_stage.action.configuration.Branch
-        PollForSourceChanges = local.code_stage.action.configuration.PollForSourceChanges
+        Branch               = "dummybranchname"
+        PollForSourceChanges = false
         // OAuthToken           = local.code_stage.action.configuration.OAuthToken
       }
     }

@@ -2,7 +2,7 @@
 
 resource "aws_codepipeline" "codepipeline_hmpps_base_packer_linux" {
 
-  name     = "hmpps_base_packer_linux"
+  name     = "hmpps-base-packer-linux-image-builder"
   role_arn = local.codepipeline_builder_role
 
   artifact_store {

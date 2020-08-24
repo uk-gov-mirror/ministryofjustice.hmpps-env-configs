@@ -1,8 +1,8 @@
 // https://www.terraform.io/docs/providers/aws/r/codepipeline.html
 
-resource "aws_codepipeline" "codepipeline_hmpps_base_packer_windows" {
+resource "aws_codepipeline" "codepipeline_hmpps_delius_core_packer_prbranch" {
 
-  name     = "hmpps-base-packer-windows-image-builder"
+  name     = "hmpps-delius-core-packer-prbranch"
   role_arn = local.codepipeline_builder_role
 
   artifact_store {
@@ -23,9 +23,8 @@ resource "aws_codepipeline" "codepipeline_hmpps_base_packer_windows" {
       configuration = {
         Owner                = local.code_stage.action.configuration.Owner
         Repo                 = local.code_stage.action.configuration.Repo
-        Branch               = local.code_stage.action.configuration.Branch
-        PollForSourceChanges = local.code_stage.action.configuration.PollForSourceChanges
-        // OAuthToken           = local.code_stage.action.configuration.OAuthToken
+        Branch               = "issues/51/ALS-1317-delius-core-packer-codepipeline"
+        PollForSourceChanges = false
       }
     }
   }
@@ -34,40 +33,8 @@ resource "aws_codepipeline" "codepipeline_hmpps_base_packer_windows" {
     name = "Build-Packer-Base-AMIS"
 
     dynamic "action" {
-      for_each = local.codebuild_project_names_stage_1_windows
-      content {
-        name             = "Build${action.value}"
-        category         = "Build"
-        owner            = "AWS"
-        provider         = "CodeBuild"
-        input_artifacts  = local.code_stage.action.output_artifacts
-        version          = "1"
-        configuration = {
-          ProjectName = action.value
-          
-          EnvironmentVariables = jsonencode([
-            for e in local.build_environment_spec.environment_variables:
-            {
-              name  = e.key
-              value = e.value
-              type  = "PLAINTEXT"
-            } 
-          ])
-          
-        }
-        run_order  = 1
-      }
-    }
-
-  }
-
-
-  stage {
-    name = "Build-Windows-Base-Dependent-AMIs"
-
-    dynamic "action" {
       
-      for_each = local.codebuild_project_names_stage_2_windows
+      for_each = local.codebuild_project_names_stage_1
      
       content {
         name             = "Build${action.value}"
@@ -78,7 +45,6 @@ resource "aws_codepipeline" "codepipeline_hmpps_base_packer_windows" {
         version          = "1"
         configuration = {
           ProjectName = action.value
-
           EnvironmentVariables = jsonencode([
             for e in local.build_environment_spec.environment_variables:
             {
@@ -87,7 +53,6 @@ resource "aws_codepipeline" "codepipeline_hmpps_base_packer_windows" {
               type  = "PLAINTEXT"
             } 
           ])
-
         }
         run_order  = 1
       }
@@ -96,11 +61,11 @@ resource "aws_codepipeline" "codepipeline_hmpps_base_packer_windows" {
   }
 
   stage {
-    name = "Build-MIS-Dependant-AMIs"
+    name = "Build-Weblogic-Dependant-AMIs"
 
     dynamic "action" {
       
-      for_each = local.codebuild_project_names_stage_3_windows
+      for_each = local.codebuild_project_names_stage_2
      
       content {
         name             = "Build${action.value}"
@@ -111,7 +76,6 @@ resource "aws_codepipeline" "codepipeline_hmpps_base_packer_windows" {
         version          = "1"
         configuration = {
           ProjectName = action.value
-
           EnvironmentVariables = jsonencode([
             for e in local.build_environment_spec.environment_variables:
             {
@@ -120,7 +84,7 @@ resource "aws_codepipeline" "codepipeline_hmpps_base_packer_windows" {
               type  = "PLAINTEXT"
             } 
           ])
-          
+
         }
         run_order  = 1
       }

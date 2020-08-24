@@ -7,7 +7,12 @@ resource "aws_codebuild_webhook" "github_webhooks_hmpps_base_packer" {
   filter_group {
     filter {
       type    = "EVENT"
-      pattern = "PULL_REQUEST_CREATED,PULL_REQUEST_UPDATED,PULL_REQUEST_MERGED"
+      pattern = "PUSH"
+    }
+
+    filter {
+      type    = "HEAD_REF"
+      pattern = "master"
     }
   }
 
