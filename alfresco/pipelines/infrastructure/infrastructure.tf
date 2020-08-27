@@ -19,7 +19,7 @@ module "integration-envs" {
   iam_role_arn     = local.iam_role_arn
   repo_name        = "hmpps-alfresco-infra-versions"
   repo_branch      = "develop"
-  environments     = ["delius-core-dev", "delius-int"]
+  environments     = ["delius-core-dev", "delius-int", "delius-auto-test"]
   tags             = var.tags
   projects         = local.projects
 }
