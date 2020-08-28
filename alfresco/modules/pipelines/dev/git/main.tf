@@ -635,6 +635,16 @@ resource "aws_codepipeline" "pipeline" {
               "name" : "ACTION_TYPE",
               "value" : "build",
               "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PRE_BUILD_ACTION",
+              "value" : "lambda_packages",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PRE_BUILD_TARGET",
+              "value" : "functions",
+              "type" : "PLAINTEXT"
             }
           ]
         )
@@ -671,6 +681,63 @@ resource "aws_codepipeline" "pipeline" {
             {
               "name" : "ACTION_TYPE",
               "value" : "build",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PRE_BUILD_ACTION",
+              "value" : "lambda_packages",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PRE_BUILD_TARGET",
+              "value" : "functions",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+    action {
+      name            = "restoreDocs"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 1
+      configuration = {
+        ProjectName   = var.projects["terraform"]
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "ENVIRONMENT_NAME",
+              "value" : each.key,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "COMPONENT",
+              "value" : "lambda/restoreDocs",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "build",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PRE_BUILD_ACTION",
+              "value" : "lambda_packages",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PRE_BUILD_TARGET",
+              "value" : "functions",
               "type" : "PLAINTEXT"
             }
           ]
