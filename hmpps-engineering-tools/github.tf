@@ -5,20 +5,20 @@ provider "github" {
 }
 
 // # reference to the target repo we're creating a github hook on
-data "github_repository" "hmpps_base_packer" {
-  full_name = "ministryofjustice/hmpps-base-packer"
+data "github_repository" "hmpps_engineering_tools" {
+  full_name = "ministryofjustice/hmpps-engineering-tools"
 }
 
 
 // # Wire the CodePipeline webhook into a GitHub repository for docker image builds
 resource "github_repository_webhook" "github_repository_webhook_hmpps_engineering_tools" {
-  repository = data.github_repository.hmpps_base_packer.name
+  repository = data.github_repository.hmpps_engineering_tools.name
 
   configuration {
     url          = aws_codepipeline_webhook.codepipeline_webhooks_hmpps_engineering_tools.url
     content_type = "json"
     insecure_ssl = false
-    secret = var.github_webhook_secret  
+    secret = var.github_webhook_secret
   }
 
   // https://developer.github.com/webhooks/event-payloads/
