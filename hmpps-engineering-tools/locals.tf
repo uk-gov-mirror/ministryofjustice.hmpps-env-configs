@@ -38,8 +38,8 @@ locals {
         }
       }
   }
-  
-  
+
+
 
 codebuild_project_names_stage_1_docker = {
     "base"                     = "${local.common_name}-base"
@@ -47,11 +47,10 @@ codebuild_project_names_stage_1_docker = {
     "base-miniconda"           = "${local.common_name}-base-miniconda"
     "ansible-builder-python-3" = "${local.common_name}-ansible-builder-python-3"
   }
-  
+
   codebuild_project_names_stage_2_docker = {
     "ansible-builder"           = "${local.common_name}-ansible-builder"
     "ansible-builder-2-7"       = "${local.common_name}-ansible-builder-2-7"
-    "terraform-builder"         = "${local.common_name}-terraform-builder"
     "terraform-builder-0-11-14" = "${local.common_name}-terraform-builder-0-11-14"
     "terraform-builder-0-12"    = "${local.common_name}-terraform-builder-0-12"
     "jenkins"                   = "${local.common_name}-jenkins"
@@ -109,7 +108,7 @@ codebuild_project_names_stage_1_docker = {
     local.codebuild_project_names_stage_7_docker,
     local.codebuild_project_names_stage_8_docker
   )
- 
+
   #======================
   # CodeBuild - General
   #======================
@@ -156,39 +155,39 @@ codebuild_project_names_stage_1_docker = {
 
     environment_variables = [
       {
-        key = "AuthorDate"      
+        key = "AuthorDate"
         value = "#{SourceVariables.AuthorDate}"
       },
       {
-        key="BRANCH_NAME"     
+        key="BRANCH_NAME"
         value = "#{SourceVariables.BranchName}"
-      },       
+      },
       {
-        key="CommitId"        
+        key="CommitId"
         value = "#{SourceVariables.CommitId}"
       },
       {
-        key="CommitterDate"   
+        key="CommitterDate"
         value = "#{SourceVariables.CommitterDate}"
       },
       {
-        key="ARTIFACT_BUCKET" 
+        key="ARTIFACT_BUCKET"
         value = "tf-eu-west-2-hmpps-eng-dev-config-s3bucket"
       },
       {
-        key="ZAIZI_BUCKET"    
+        key="ZAIZI_BUCKET"
         value = "tf-eu-west-2-hmpps-eng-dev-artefacts-s3bucket"
       },
       {
-        key="AWS_REGION"      
+        key="AWS_REGION"
         value = var.region
       },
       {
-        key="REGISTRY"      
+        key="REGISTRY"
         value = local.ecr-registry
       }
-    ]    
-    
+    ]
+
   }
 
   #=======================
@@ -196,7 +195,7 @@ codebuild_project_names_stage_1_docker = {
   #=======================
   vpc_config = {
     vpc_id      = data.terraform_remote_state.vpc.outputs.vpc_id
-    
+
     subnet_ids = [
       data.terraform_remote_state.vpc.outputs.private-subnet-az1,
       data.terraform_remote_state.vpc.outputs.private-subnet-az2,
@@ -208,5 +207,5 @@ codebuild_project_names_stage_1_docker = {
       data.terraform_remote_state.common.outputs.codebuild_info["packerbuilder_instance_security_group"],
     ]
   }
- 
+
 }
