@@ -42,6 +42,7 @@ locals {
     "oracle-db"     = "${local.common_name}-oracle-db"
     "oracle-db-11g" = "${local.common_name}-oracle-db-11g"
     "oracle-db-18c" = "${local.common_name}-oracle-db-18c"
+    "oracle-db-19c" = "${local.common_name}-oracle-db-19c"
     "oracle-client" = "${local.common_name}-oracle-client"
   }
   
