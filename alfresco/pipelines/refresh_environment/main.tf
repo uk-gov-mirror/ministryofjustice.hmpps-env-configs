@@ -2,7 +2,8 @@ locals {
   refresh_environments = [
     "delius-perf",
     "delius-stage",
-    "alfresco-dev"
+    "alfresco-dev",
+    "delius-pre-prod"
   ]
   prefix           = "alf-refresh-tasks"
   artefacts_bucket = data.terraform_remote_state.common.outputs.codebuild_info["artefacts_bucket"]
