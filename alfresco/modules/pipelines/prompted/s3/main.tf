@@ -1513,7 +1513,7 @@ resource "aws_codepipeline" "pipeline" {
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
-      run_order       = 1
+      run_order       = 3
       configuration = {
         ProjectName   = var.projects["terraform"]
         PrimarySource = "code"
