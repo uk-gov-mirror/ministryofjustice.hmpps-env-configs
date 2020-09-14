@@ -762,7 +762,7 @@ resource "aws_codepipeline" "pipeline" {
             },
             {
               "name" : "COMPONENT",
-              "value" : "elk-migration",
+              "value" : "elk-service",
               "type" : "PLAINTEXT"
             },
             {
@@ -857,7 +857,7 @@ resource "aws_codepipeline" "pipeline" {
             },
             {
               "name" : "COMPONENT",
-              "value" : "elk-migration",
+              "value" : "elk-service",
               "type" : "PLAINTEXT"
             },
             {
