@@ -5,6 +5,6 @@ module "release-pipeline" {
   prefix           = "alf-lambda"
   iam_role_arn     = local.iam_role_arn
   repo_name        = "hmpps-alfresco-lambda-functions"
-  repo_branch      = "develop"
+  repo_branch      = "feature/add-pipelines"
   tags             = var.tags
 }
