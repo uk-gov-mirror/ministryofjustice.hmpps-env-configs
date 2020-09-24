@@ -25,4 +25,6 @@ phases:
       - make terraform component=alfresco/pipelines/refresh_environment
       - make terraform component=alfresco/pipelines/infrastructure
       - make terraform component=alfresco/pipelines/lambda_functions
+      - make terraform component=mis/base
+      - make terraform component=mis/pipelines/snapshot
       - make terraform component=ten10
