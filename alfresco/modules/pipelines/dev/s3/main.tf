@@ -452,6 +452,11 @@ resource "aws_codepipeline" "pipeline" {
               "name" : "PACKAGE_NAME",
               "value" : "alfresco-terraform.tar",
               "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PRE_BUILD_TARGET",
+              "value" : "functions",
+              "type" : "PLAINTEXT"
             }
           ]
         )

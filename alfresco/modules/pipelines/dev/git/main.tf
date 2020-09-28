@@ -407,6 +407,11 @@ resource "aws_codepipeline" "pipeline" {
               "name" : "ACTION_TYPE",
               "value" : "build",
               "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PRE_BUILD_TARGET",
+              "value" : "functions",
+              "type" : "PLAINTEXT"
             }
           ]
         )
