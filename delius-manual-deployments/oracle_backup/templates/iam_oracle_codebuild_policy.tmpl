@@ -1,0 +1,34 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+        "Sid": "BuildPerms",
+        "Effect": "Allow",
+        "Action": [
+            "ssm:*",
+            "codebuild:*",
+            "codepipeline:*",
+            "ec2:*"
+        ],
+        "Resource": "*"
+    },
+    {
+        "Sid": "CloudWatch",
+        "Effect": "Allow",
+        "Action": [
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+            "logs:PutLogEvents"
+        ],
+        "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Sid": "S3Access",
+      "Action": [
+        "s3:*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
