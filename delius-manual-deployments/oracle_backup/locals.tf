@@ -29,7 +29,7 @@ locals {
         configuration = {
           Owner                = "ministryofjustice"
           Repo                 = "delius-manual-deployments"
-          Branch               = "ALS-1377"
+          Branch               = "master"
           PollForSourceChanges = false # use git webhook
         }
       }
