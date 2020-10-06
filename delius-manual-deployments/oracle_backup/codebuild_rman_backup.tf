@@ -26,7 +26,7 @@ resource "aws_codebuild_project" "oracle_backups_codebuild_project" {
       buildspec       = local.build_source.buildspec
     }
 
-    source_version = "ALS-1377"
+    source_version = "master"
 
     environment {
       compute_type                = local.build_environment_spec.compute_type

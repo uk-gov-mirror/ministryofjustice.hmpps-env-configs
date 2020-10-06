@@ -2,20 +2,20 @@ resource "aws_cloudwatch_event_rule" "oracle_backup_cloudwatch_event_rule" {
 
   for_each = { for job in var.oracle_backup_jobs: "${job.type}-${job.environment}-${job.host}" => job }
 
-    name                = "oracle-backup-event-rule-${each.key}"
+    name                = "oracle-backup-rule-${each.key}"
     schedule_expression = each.value.schedule
     description         = "Oracle ${each.value.type} backup schedule for ${each.value.host} on ${each.value.environment}"
-    is_enabled          = false
+    is_enabled          = true
 }
 
 resource "aws_cloudwatch_event_rule" "oracle_validate_backup_cloudwatch_event_rule" {
 
   for_each = { for job in var.oracle_validate_backup_jobs: "${job.environment}-${job.host}" => job }
 
-    name                = "oracle-validate-event-rule-${each.key}"
+    name                = "oracle-validate-rule-${each.key}"
     schedule_expression = each.value.schedule
     description         = "Oracle validate backup schedule for ${each.value.host} on ${each.value.environment}"
-    is_enabled          = false
+    is_enabled          = true
 }
 
 resource "aws_cloudwatch_event_target" "oracle_backup_pipeline_cloudwatch_event_target" {

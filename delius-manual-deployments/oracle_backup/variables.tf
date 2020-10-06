@@ -46,6 +46,18 @@ variable "oracle_backup_jobs" {
       host = "delius_primarydb"
       type = "weekly"
       schedule = "cron(30 05 ? * 2 *)"
+    },
+    {
+      environment = "delius-core-sandpit"
+      host = "delius_primarydb"
+      type = "daily"
+      schedule = "cron(30 05 ? * 3-6 *)"
+    },
+    {
+      environment = "delius-core-sandpit"
+      host = "delius_primarydb"
+      type = "weekly"
+      schedule = "cron(30 05 ? * 2 *)"
     }
   ]
 }
