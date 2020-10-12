@@ -20,12 +20,4 @@ phases:
   build:
     commands:
       - export HMPPS_BUILD_WORK_DIR=${CODEBUILD_SRC_DIR}
-      - make terraform component=common
-      - make terraform component=alfresco/base
-      - make terraform component=alfresco/pipelines/refresh_environment
-      - make terraform component=alfresco/pipelines/infrastructure
-      - make terraform component=alfresco/pipelines/database_tasks
-      - make terraform component=alfresco/pipelines/lambda_functions
-      - make terraform component=mis/base
-      - make terraform component=mis/pipelines/snapshot
-      - make terraform component=ten10
+      - make ${TASK} component=${COMPONENT}
