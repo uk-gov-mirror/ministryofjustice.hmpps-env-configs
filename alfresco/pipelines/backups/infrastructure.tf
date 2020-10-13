@@ -8,15 +8,15 @@ module "backup-pipelines" {
   repo_branch      = "develop"
   environments = [
     # "delius-training-test",
-    # "delius-training",
-    # "delius-test",
+    "delius-training",
+    "delius-test",
     # "delius-po-test1",
     # "delius-stage",
-    # "delius-pre-prod",
-    # "delius-perf",
+    "delius-pre-prod",
+    "delius-perf",
     # "delius-prod",
-    # "delius-core-dev",
-    # "delius-int",
+    "delius-core-dev",
+    "delius-int",
     "alfresco-dev"
   ]
   tags     = var.tags
