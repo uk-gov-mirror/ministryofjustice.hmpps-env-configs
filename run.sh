@@ -154,3 +154,6 @@ case ${ACTION_TYPE} in
     echo "${ACTION_TYPE} is not a valid argument. init - apply - test - output - destroy"
   ;;
 esac
+
+set -o pipefail
+set -x
