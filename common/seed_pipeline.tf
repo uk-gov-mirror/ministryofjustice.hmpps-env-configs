@@ -106,6 +106,33 @@ resource "aws_codepipeline" "pipeline" {
         )
       }
     }
+    action {
+      name            = "ManageHostedZones"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 1
+      configuration = {
+        ProjectName   = aws_codebuild_project.pipelines.id
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "COMPONENT",
+              "value" : "security/hosted-zone-pipeline",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "TASK",
+              "value" : "terraform",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
   }
   stage {
     name = "Alfresco"
