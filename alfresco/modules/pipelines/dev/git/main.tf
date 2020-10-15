@@ -432,7 +432,7 @@ resource "aws_codepipeline" "pipeline" {
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
-      run_order       = 2
+      run_order       = 1
       configuration = {
         ProjectName   = var.projects["terraform"]
         PrimarySource = "code"
@@ -506,7 +506,7 @@ resource "aws_codepipeline" "pipeline" {
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
-      run_order       = 4
+      run_order       = 3
       configuration = {
         ProjectName   = var.projects["terraform"]
         PrimarySource = "code"
