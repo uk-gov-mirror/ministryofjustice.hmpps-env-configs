@@ -27,12 +27,10 @@ resource "aws_codebuild_project" "hmpps_delius_dss_offloc_docker" {
     dynamic "environment_variable" {
       for_each = local.build_environment_spec.environment_variables
       content {
-        name  = environment_variable.key
-        value = environment_variable.value
+        name  = environment_variable.value["key"]
+        value = environment_variable.value["value"]
       }
-      
     }
-
   }
 
   logs_config {

@@ -40,7 +40,7 @@ locals {
   #======================
   build_source = {
     type                = "GITHUB"
-    location           = "https://github.com/ministryofjustice/hmpps-dss-offloc-docker.git"
+    location           = "https://github.com/ministryofjustice/hmpps-delius-dss-offloc-docker.git"
     git_clone_depth     = 0
     insecure_ssl        = false
     report_build_status = false
@@ -62,11 +62,28 @@ locals {
     image_pull_credentials_type = "CODEBUILD"
     privileged_mode = true
     
-    environment_variables = {
-      "ARTIFACT_BUCKET" = "tf-eu-west-2-hmpps-eng-dev-config-s3bucket"
-      "ZAIZI_BUCKET"    = "tf-eu-west-2-hmpps-eng-dev-artefacts-s3bucket"
-      "AWS_REGION"      = var.region
-    }    
+    environment_variables = [
+      {
+        key="ARTIFACT_BUCKET"
+        value = "tf-eu-west-2-hmpps-eng-dev-config-s3bucket"
+      },
+      {
+        key="ZAIZI_BUCKET"
+        value = "tf-eu-west-2-hmpps-eng-dev-artefacts-s3bucket"
+      },
+      {
+        key="AWS_REGION"
+        value = var.region
+      },
+      {
+        key="REGISTRY"
+        value = local.ecr-registry
+      },
+      { 
+        key="DSS_VERSION"
+        value = "3.0"
+      }
+    ]
 
   }
 
