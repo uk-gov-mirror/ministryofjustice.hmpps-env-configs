@@ -903,48 +903,6 @@ resource "aws_codepipeline" "pipeline" {
   stage {
     name = format("%s-services", each.key)
     action {
-      name            = "alfresco_plan"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 1
-      configuration = {
-        ProjectName   = var.projects["terraform"]
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "COMPONENT",
-              "value" : "asg",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ACTION_TYPE",
-              "value" : "plan",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-    action {
       name            = "solr_plan"
       input_artifacts = ["code"]
       category        = "Build"
@@ -987,7 +945,7 @@ resource "aws_codepipeline" "pipeline" {
       }
     }
     action {
-      name      = "approve-apply"
+      name      = "approve-solr-apply"
       category  = "Approval"
       owner     = "AWS"
       provider  = "Manual"
@@ -995,48 +953,6 @@ resource "aws_codepipeline" "pipeline" {
       run_order = 2
       configuration = {
         CustomData = "Please review plans and approve to proceed?"
-      }
-    }
-    action {
-      name            = "alfresco_apply"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 3
-      configuration = {
-        ProjectName   = var.projects["terraform"]
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "COMPONENT",
-              "value" : "asg",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ACTION_TYPE",
-              "value" : "build",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
       }
     }
     action {
@@ -1082,13 +998,108 @@ resource "aws_codepipeline" "pipeline" {
       }
     }
     action {
-      name            = "waf_plan"
+      name            = "alfresco_plan"
       input_artifacts = ["code"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
       run_order       = 4
+      configuration = {
+        ProjectName   = var.projects["terraform"]
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "ENVIRONMENT_NAME",
+              "value" : each.key,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "COMPONENT",
+              "value" : "asg",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "plan",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PACKAGE_NAME",
+              "value" : "alfresco-terraform.tar",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+    action {
+      name      = "approve-alfresco-apply"
+      category  = "Approval"
+      owner     = "AWS"
+      provider  = "Manual"
+      version   = "1"
+      run_order = 5
+      configuration = {
+        CustomData = "Please review plans and approve to proceed?"
+      }
+    }
+    action {
+      name            = "alfresco_apply"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 5
+      configuration = {
+        ProjectName   = var.projects["terraform"]
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "ENVIRONMENT_NAME",
+              "value" : each.key,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "COMPONENT",
+              "value" : "asg",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "build",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PACKAGE_NAME",
+              "value" : "alfresco-terraform.tar",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+    action {
+      name            = "waf_plan"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 6
       configuration = {
         ProjectName   = var.projects["terraform"]
         PrimarySource = "code"
@@ -1129,7 +1140,7 @@ resource "aws_codepipeline" "pipeline" {
       owner     = "AWS"
       provider  = "Manual"
       version   = "1"
-      run_order = 5
+      run_order = 7
       configuration = {
         CustomData = "Please review plans and approve to proceed?"
       }
@@ -1141,7 +1152,7 @@ resource "aws_codepipeline" "pipeline" {
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
-      run_order       = 6
+      run_order       = 8
       configuration = {
         ProjectName   = var.projects["terraform"]
         PrimarySource = "code"
