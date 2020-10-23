@@ -40,6 +40,3 @@
 
     - name: import GitHub access token into CodeBuild and store the ARN in parameter store
       include: projects/common/credentials/github.yml
-
-    - name: create ten10 pipelines
-      include: projects/ten10.yml
