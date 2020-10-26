@@ -36,28 +36,16 @@ variable "oracle_backup_jobs" {
   }))
   default = [
     {
-      environment = "delius-core-dev"
-      host = "delius_primarydb"
-      type = "daily"
-      schedule = "cron(30 05 ? * 3-6 *)"
-    },
-    {
-      environment = "delius-core-dev"
-      host = "delius_primarydb"
-      type = "weekly"
-      schedule = "cron(30 05 ? * 2 *)"
-    },
-    {
       environment = "delius-core-sandpit"
       host = "delius_primarydb"
       type = "daily"
-      schedule = "cron(30 05 ? * 3-6 *)"
+      schedule = "cron(30 06 ? * 3-6 *)"
     },
     {
       environment = "delius-core-sandpit"
       host = "delius_primarydb"
       type = "weekly"
-      schedule = "cron(30 05 ? * 2 *)"
+      schedule = "cron(30 06 ? * 2 *)"
     }
   ]
 }
@@ -69,10 +57,6 @@ variable "oracle_validate_chunks_jobs" {
     host = string
   }))
   default = [
-    {
-      environment = "delius-core-dev"
-      host = "delius_primarydb"
-    },
     {
       environment = "delius-core-sandpit"
       host = "delius_primarydb"
