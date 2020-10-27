@@ -1057,7 +1057,7 @@ resource "aws_codepipeline" "pipeline" {
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
-      run_order       = 5
+      run_order       = 6
       configuration = {
         ProjectName   = var.projects["terraform"]
         PrimarySource = "code"
@@ -1099,7 +1099,7 @@ resource "aws_codepipeline" "pipeline" {
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
-      run_order       = 6
+      run_order       = 7
       configuration = {
         ProjectName   = var.projects["terraform"]
         PrimarySource = "code"
@@ -1140,7 +1140,7 @@ resource "aws_codepipeline" "pipeline" {
       owner     = "AWS"
       provider  = "Manual"
       version   = "1"
-      run_order = 7
+      run_order = 8
       configuration = {
         CustomData = "Please review plans and approve to proceed?"
       }
@@ -1152,7 +1152,7 @@ resource "aws_codepipeline" "pipeline" {
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
-      run_order       = 8
+      run_order       = 9
       configuration = {
         ProjectName   = var.projects["terraform"]
         PrimarySource = "code"
