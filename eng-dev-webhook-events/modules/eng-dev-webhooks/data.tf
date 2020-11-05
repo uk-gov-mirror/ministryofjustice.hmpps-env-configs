@@ -20,6 +20,7 @@ data "aws_iam_policy_document" "lambda_policy" {
       "codepipeline:ListPipelines",
       "codepipeline:GetPipeline",
       "codepipeline:UpdatePipeline",
+      "codepipeline:StartPipelineExecution",
       "iam:PassRole",
       "events:PutEvents",
     ]
