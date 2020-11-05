@@ -1,5 +1,5 @@
 module "functions-pipeline" {
-  source           = "modules/lambda"
+  source           = "./modules/lambda"
   artefacts_bucket = local.artefacts_bucket
   pipeline_bucket  = local.pipeline_bucket
   prefix           = "eng-lambda"

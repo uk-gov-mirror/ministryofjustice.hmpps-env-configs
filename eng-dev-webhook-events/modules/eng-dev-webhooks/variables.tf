@@ -76,3 +76,11 @@ variable "retention_in_days" {
 }
 
 variable "tags" {}
+
+variable "lambda_map" {
+  type = map(string)
+  default = {
+    webhook_handler_key = ""
+    webhook_events_key  = ""
+  }
+}

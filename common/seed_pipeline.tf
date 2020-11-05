@@ -78,63 +78,6 @@ resource "aws_codepipeline" "pipeline" {
     }
   }
   stage {
-    name = "Security"
-    action {
-      name            = "CreateCredentials"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 1
-      configuration = {
-        ProjectName   = aws_codebuild_project.pipelines.id
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "COMPONENT",
-              "value" : "security/credentials",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TASK",
-              "value" : "terraform",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-    action {
-      name            = "ManageHostedZones"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 1
-      configuration = {
-        ProjectName   = aws_codebuild_project.pipelines.id
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "COMPONENT",
-              "value" : "security/hosted-zone-pipeline",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TASK",
-              "value" : "terraform",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-  }
-  stage {
     name = "Engineering"
     action {
       name            = "lambda_functions"
@@ -189,6 +132,63 @@ resource "aws_codepipeline" "pipeline" {
             {
               "name" : "PRE_BUILD_TARGET",
               "value" : "functions",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+  }
+  stage {
+    name = "Security"
+    action {
+      name            = "CreateCredentials"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 1
+      configuration = {
+        ProjectName   = aws_codebuild_project.pipelines.id
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "COMPONENT",
+              "value" : "security/credentials",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "TASK",
+              "value" : "terraform",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+    action {
+      name            = "ManageHostedZones"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 1
+      configuration = {
+        ProjectName   = aws_codebuild_project.pipelines.id
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "COMPONENT",
+              "value" : "security/hosted-zone-pipeline",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "TASK",
+              "value" : "terraform",
               "type" : "PLAINTEXT"
             }
           ]

@@ -43,8 +43,8 @@ resource "aws_api_gateway_integration" "webhooks" {
   http_method             = aws_api_gateway_method.webhooks.http_method
   integration_http_method = "POST"
   type                    = "AWS"
-###uri                     = "arn:aws:apigateway:${data.aws_region.current.name}:lambda:path/2015-03-31/functions/${aws_lambda_function.lambda.arn}/invocations"
-  uri                     = aws_lambda_function.lambda.invoke_arn
+  ###uri                     = "arn:aws:apigateway:${data.aws_region.current.name}:lambda:path/2015-03-31/functions/${aws_lambda_function.lambda.arn}/invocations"
+  uri = aws_lambda_function.lambda.invoke_arn
 
   request_parameters = {
     "integration.request.header.X-GitHub-Event" = "method.request.header.X-GitHub-Event"
@@ -113,14 +113,14 @@ resource "aws_lambda_permission" "lambda" {
 }
 
 resource "aws_lambda_function" "lambda" {
-  filename         = "lambda/events-function.zip"
-  source_code_hash = filebase64sha256("lambda/events-function.zip")
-  handler          = "main.lambda_handler"
-  function_name    = var.name
-  role             = aws_iam_role.lambda.arn
-  memory_size      = var.lambda_memory
-  timeout          = var.lambda_timeout
-  runtime          = "python3.7"
+  s3_bucket     = var.artifact_bucket
+  s3_key        = var.lambda_map["webhook_events_key"]
+  handler       = "main.lambda_handler"
+  function_name = var.name
+  role          = aws_iam_role.lambda.arn
+  memory_size   = var.lambda_memory
+  timeout       = var.lambda_timeout
+  runtime       = "python3.7"
   tags = merge(
     var.tags,
     {
@@ -159,19 +159,19 @@ resource "aws_iam_policy" "lambda" {
 
 
 resource "aws_lambda_function" "webhook-handler" {
-  filename         = "lambda/handler-function.zip"
-  source_code_hash = filebase64sha256("lambda/handler-function.zip")
-  handler          = "main.lambda_handler"
-  function_name    = "eng-webhook-handler"
-  role             = aws_iam_role.lambda.arn
-  memory_size      = var.lambda_memory
-  timeout          = var.lambda_timeout
-  runtime          = "python3.7"
+  s3_bucket     = var.artifact_bucket
+  s3_key        = var.lambda_map["webhook_handler_key"]
+  handler       = "main.lambda_handler"
+  function_name = "eng-webhook-handler"
+  role          = aws_iam_role.lambda.arn
+  memory_size   = var.lambda_memory
+  timeout       = var.lambda_timeout
+  runtime       = "python3.7"
 
 
   environment {
     variables = {
-      GITHUB_SSM_PARAM     = var.github_oauth_token_ssm_param
+      GITHUB_SSM_PARAM = var.github_oauth_token_ssm_param
     }
   }
   tags = merge(
@@ -220,7 +220,7 @@ resource "aws_cloudwatch_event_target" "handler" {
   target_id = "ci-webhook-handler"
   arn       = aws_lambda_function.webhook-handler.arn
   input_transformer {
-    input_paths = {"action"="$.detail.action","branch"="$.detail.source_branch","repository"="$.detail.repository"}
+    input_paths    = { "action" = "$.detail.action", "branch" = "$.detail.source_branch", "repository" = "$.detail.repository" }
     input_template = <<EOF
 {
   "pipeline_name": "alf-infra-build-alfresco-dev",
@@ -229,7 +229,7 @@ resource "aws_cloudwatch_event_target" "handler" {
   "repository": <repository>
 }
 EOF
- }
+  }
 }
 
 
