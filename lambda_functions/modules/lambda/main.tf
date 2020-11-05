@@ -1,11 +1,11 @@
 resource "aws_codepipeline" "pipeline" {
-  name     = "create-pipelines-eng-dev"
-  role_arn = aws_iam_role.codebuild.arn
+  name     = "${var.prefix}-functions-builder"
+  role_arn = var.iam_role_arn
   tags     = var.tags
 
   artifact_store {
     type     = "S3"
-    location = aws_s3_bucket.codepipeline.bucket
+    location = var.pipeline_bucket
   }
 
   stage {
@@ -18,17 +18,17 @@ resource "aws_codepipeline" "pipeline" {
       version          = "1"
       output_artifacts = ["code"]
       configuration = {
-        Owner                = "ministryofjustice"
-        Repo                 = "hmpps-engineering-pipelines"
-        Branch               = "develop"
+        Owner                = var.repo_owner
+        Repo                 = var.repo_name
+        Branch               = var.repo_branch
         PollForSourceChanges = true
       }
     }
   }
   stage {
-    name = "PipelineComponents"
+    name = "Docker"
     action {
-      name            = "Common"
+      name            = "python-builder"
       input_artifacts = ["code"]
       category        = "Build"
       owner           = "AWS"
@@ -36,51 +36,36 @@ resource "aws_codepipeline" "pipeline" {
       version         = "1"
       run_order       = 1
       configuration = {
-        ProjectName   = aws_codebuild_project.pipelines.id
+        ProjectName   = "alfresco-docker-tasks"
         PrimarySource = "code"
         EnvironmentVariables = jsonencode(
           [
             {
               "name" : "COMPONENT",
-              "value" : "common",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-    action {
-      name            = "Ansible"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 2
-      configuration = {
-        ProjectName   = aws_codebuild_project.ansible3.id
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "COMPONENT",
-              "value" : "codepipelines",
+              "value" : "python-builder",
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "TASK",
-              "value" : "ansible",
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "build",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "BUILD_IMAGE",
+              "value" : "mojdigitalstudio/hmpps-lambda-python-builder",
               "type" : "PLAINTEXT"
             }
           ]
         )
       }
     }
-  }
-  stage {
-    name = "Security"
     action {
-      name            = "CreateCredentials"
+      name            = "content-refresh"
       input_artifacts = ["code"]
       category        = "Build"
       owner           = "AWS"
@@ -88,45 +73,28 @@ resource "aws_codepipeline" "pipeline" {
       version         = "1"
       run_order       = 1
       configuration = {
-        ProjectName   = aws_codebuild_project.pipelines.id
+        ProjectName   = "alfresco-docker-tasks"
         PrimarySource = "code"
         EnvironmentVariables = jsonencode(
           [
             {
               "name" : "COMPONENT",
-              "value" : "security/credentials",
+              "value" : "content-refresh",
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "TASK",
-              "value" : "terraform",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-    action {
-      name            = "ManageHostedZones"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 1
-      configuration = {
-        ProjectName   = aws_codebuild_project.pipelines.id
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "COMPONENT",
-              "value" : "security/hosted-zone-pipeline",
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "TASK",
-              "value" : "terraform",
+              "name" : "ACTION_TYPE",
+              "value" : "build",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "BUILD_IMAGE",
+              "value" : "mojdigitalstudio/redis-s3-sync",
               "type" : "PLAINTEXT"
             }
           ]
@@ -135,9 +103,9 @@ resource "aws_codepipeline" "pipeline" {
     }
   }
   stage {
-    name = "Engineering"
+    name = "Boto3"
     action {
-      name            = "lambda_functions"
+      name            = "boto3"
       input_artifacts = ["code"]
       category        = "Build"
       owner           = "AWS"
@@ -145,18 +113,55 @@ resource "aws_codepipeline" "pipeline" {
       version         = "1"
       run_order       = 1
       configuration = {
-        ProjectName   = aws_codebuild_project.pipelines.id
+        ProjectName   = "alfresco-docker-tasks"
         PrimarySource = "code"
         EnvironmentVariables = jsonencode(
           [
             {
               "name" : "COMPONENT",
-              "value" : "lambda_functions",
+              "value" : "boto3",
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "TASK",
-              "value" : "terraform",
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "package",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+    action {
+      name            = "webhook-handler"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 1
+      configuration = {
+        ProjectName   = "alfresco-docker-tasks"
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "COMPONENT",
+              "value" : "webhook-handler",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "package",
               "type" : "PLAINTEXT"
             }
           ]
@@ -170,25 +175,94 @@ resource "aws_codepipeline" "pipeline" {
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
-      run_order       = 2
+      run_order       = 1
       configuration = {
-        ProjectName   = aws_codebuild_project.pipelines.id
+        ProjectName   = "alfresco-docker-tasks"
         PrimarySource = "code"
         EnvironmentVariables = jsonencode(
           [
             {
               "name" : "COMPONENT",
-              "value" : "eng-dev-webhook-events",
+              "value" : "webhook-events",
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "TASK",
-              "value" : "terraform",
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "PRE_BUILD_TARGET",
-              "value" : "functions",
+              "name" : "ACTION_TYPE",
+              "value" : "package",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+    action {
+      name            = "s3RestoreSubmit"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 2
+      configuration = {
+        ProjectName   = "alfresco-docker-tasks"
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "COMPONENT",
+              "value" : "s3RestoreSubmit",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "package",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "BASE_PKG",
+              "value" : "boto3",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+    action {
+      name            = "s3RestoreWorker"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 2
+      configuration = {
+        ProjectName   = "alfresco-docker-tasks"
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "COMPONENT",
+              "value" : "s3RestoreWorker",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "package",
               "type" : "PLAINTEXT"
             }
           ]
@@ -197,9 +271,9 @@ resource "aws_codepipeline" "pipeline" {
     }
   }
   stage {
-    name = "Alfresco"
+    name = "Support"
     action {
-      name            = "AlfBase"
+      name            = "content-refresh"
       input_artifacts = ["code"]
       category        = "Build"
       owner           = "AWS"
@@ -207,18 +281,23 @@ resource "aws_codepipeline" "pipeline" {
       version         = "1"
       run_order       = 1
       configuration = {
-        ProjectName   = aws_codebuild_project.pipelines.id
+        ProjectName   = "alfresco-docker-tasks"
         PrimarySource = "code"
         EnvironmentVariables = jsonencode(
           [
             {
               "name" : "COMPONENT",
-              "value" : "alfresco/base",
+              "value" : "content-refresh",
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "TASK",
-              "value" : "terraform",
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "package",
               "type" : "PLAINTEXT"
             }
           ]
@@ -226,118 +305,7 @@ resource "aws_codepipeline" "pipeline" {
       }
     }
     action {
-      name            = "AlfRefreshEnvironments"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 2
-      configuration = {
-        ProjectName   = aws_codebuild_project.pipelines.id
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "COMPONENT",
-              "value" : "alfresco/pipelines/refresh_environment",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TASK",
-              "value" : "terraform",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-    action {
-      name            = "AlfInfrastructure"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 2
-      configuration = {
-        ProjectName   = aws_codebuild_project.pipelines.id
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "COMPONENT",
-              "value" : "alfresco/pipelines/infrastructure",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TASK",
-              "value" : "terraform",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-    action {
-      name            = "AlfBackupTasks"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 2
-      configuration = {
-        ProjectName   = aws_codebuild_project.pipelines.id
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "COMPONENT",
-              "value" : "alfresco/pipelines/backups",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TASK",
-              "value" : "terraform",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-    action {
-      name            = "AlfDatabaseTasks"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 2
-      configuration = {
-        ProjectName   = aws_codebuild_project.pipelines.id
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "COMPONENT",
-              "value" : "alfresco/pipelines/database_tasks",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TASK",
-              "value" : "terraform",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-  }
-  stage {
-    name = "MIS"
-    action {
-      name            = "MisBase"
+      name            = "alert_handler"
       input_artifacts = ["code"]
       category        = "Build"
       owner           = "AWS"
@@ -345,18 +313,23 @@ resource "aws_codepipeline" "pipeline" {
       version         = "1"
       run_order       = 1
       configuration = {
-        ProjectName   = aws_codebuild_project.pipelines.id
+        ProjectName   = "alfresco-docker-tasks"
         PrimarySource = "code"
         EnvironmentVariables = jsonencode(
           [
             {
               "name" : "COMPONENT",
-              "value" : "mis/base",
+              "value" : "alert_handler",
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "TASK",
-              "value" : "terraform",
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "package",
               "type" : "PLAINTEXT"
             }
           ]
@@ -364,37 +337,7 @@ resource "aws_codepipeline" "pipeline" {
       }
     }
     action {
-      name            = "MisSnapshot"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 2
-      configuration = {
-        ProjectName   = aws_codebuild_project.pipelines.id
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "COMPONENT",
-              "value" : "mis/pipelines/snapshot",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TASK",
-              "value" : "terraform",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-  }
-  stage {
-    name = "Ten10"
-    action {
-      name            = "ten10"
+      name            = "aws_elasticsearch"
       input_artifacts = ["code"]
       category        = "Build"
       owner           = "AWS"
@@ -402,18 +345,23 @@ resource "aws_codepipeline" "pipeline" {
       version         = "1"
       run_order       = 1
       configuration = {
-        ProjectName   = aws_codebuild_project.pipelines.id
+        ProjectName   = "alfresco-docker-tasks"
         PrimarySource = "code"
         EnvironmentVariables = jsonencode(
           [
             {
               "name" : "COMPONENT",
-              "value" : "ten10",
+              "value" : "aws-elasticsearch",
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "TASK",
-              "value" : "terraform",
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "package",
               "type" : "PLAINTEXT"
             }
           ]

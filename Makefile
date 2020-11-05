@@ -13,3 +13,8 @@ terraform:
 
 ansible:
 	sh run.sh $(ENVIRONMENT_NAME) ansible $(component)
+
+lambda_packages:
+	rm -rf $(component)
+	mkdir $(component)
+	aws s3 sync --only-show-errors s3://$(ARTEFACTS_BUCKET)/projects/engineering/lambda_functions/builds/$(LAMBDA_FUNCTIONS_VERSION)/ $(CODEBUILD_SRC_DIR)/$(component)/
