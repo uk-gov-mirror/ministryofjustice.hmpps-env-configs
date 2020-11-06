@@ -65,3 +65,15 @@ data "aws_iam_policy_document" "lambda_assume" {
     }
   }
 }
+
+data "aws_iam_policy_document" "api_gateway_policy" {
+  statement {
+    effect    = "Allow"
+    actions   = ["*"]
+    resources = ["*"]
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+  }
+}

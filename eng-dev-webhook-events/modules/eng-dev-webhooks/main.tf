@@ -52,7 +52,8 @@ resource "aws_api_gateway_integration" "webhooks" {
   uri = aws_lambda_function.lambda.invoke_arn
 
   request_parameters = {
-    "integration.request.header.X-GitHub-Event" = "method.request.header.X-GitHub-Event"
+    "integration.request.header.X-GitHub-Event"  = "method.request.header.X-GitHub-Event"
+    "integration.request.header.X-Hub-Signature" = "method.request.header.X-Hub-Signature"
   }
 
   request_templates = {
@@ -61,7 +62,9 @@ resource "aws_api_gateway_integration" "webhooks" {
   "body" : $input.json('$'),
   "header" : {
     "X-GitHub-Event": "$input.params('X-GitHub-Event')",
-    "X-GitHub-Delivery": "$input.params('X-GitHub-Delivery')"
+    "X-GitHub-Delivery": "$input.params('X-GitHub-Delivery')",
+    "X-Hub-Signature": "$input.params('X-Hub-Signature')",
+    "X-Hub-Signature-256": "$input.params('X-Hub-Signature-256')
   }
 }
 JSON
@@ -152,7 +155,7 @@ resource "aws_lambda_function" "lambda" {
   runtime       = "python3.7"
   environment {
     variables = {
-      EVENT_BUS_NAME = var.lambda_map["event_bus_name"],
+      EVENT_BUS_NAME      = var.lambda_map["event_bus_name"],
       EVENT_BUS_SOURCE_ID = var.lambda_map["event_bus_source_id"]
     }
   }

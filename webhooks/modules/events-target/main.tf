@@ -56,8 +56,9 @@ resource "github_repository_webhook" "webhook" {
   events     = ["push", "create", "delete"]
 
   configuration {
-    url          = var.event_target_map["api_gateway_invoke_url"]
-    content_type = "application/json"
+    url          = var.event_target_map["webhook_invoke_url"]
+    content_type = "json"
     insecure_ssl = false
+    # secret       = var.event_target_map["webhook_secret_key"]
   }
 }

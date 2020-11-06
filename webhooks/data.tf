@@ -18,3 +18,7 @@ data "terraform_remote_state" "webhook" {
     region = var.region
   }
 }
+
+data "aws_ssm_parameter" "webhook_secret" {
+  name = "/codepipeline/webhooks/secret"
+}

@@ -133,6 +133,16 @@ resource "aws_codepipeline" "pipeline" {
               "name" : "PRE_BUILD_TARGET",
               "value" : "functions",
               "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PRE_BUILD_ACTION",
+              "value" : "lambda_packages",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : aws_s3_bucket.artefacts.bucket,
+              "type" : "PLAINTEXT"
             }
           ]
         )

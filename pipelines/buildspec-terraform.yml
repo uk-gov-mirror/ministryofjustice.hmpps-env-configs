@@ -17,7 +17,6 @@ phases:
       - mv ${ENG_REPO}/env_configs env_configs
       - rm -rf ${ENG_REPO}
       - sed -i "s/admin/terraform/g" env_configs/dev.properties
-      - source configs/common.properties
       - sh scripts/pre-build.sh
   build:
     commands:
