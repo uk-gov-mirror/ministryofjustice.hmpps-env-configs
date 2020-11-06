@@ -25,3 +25,4 @@ resource "aws_s3_bucket_object" "webhook_handler" {
   source = local.webhook_handler_payload_file
   etag   = filemd5(local.webhook_handler_payload_file)
 }
+

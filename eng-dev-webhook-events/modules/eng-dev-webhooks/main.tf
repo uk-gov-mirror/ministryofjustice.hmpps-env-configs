@@ -14,13 +14,18 @@
 # API Gateway
 #--------------------------------------------------------------------
 
+locals = {
+  emitter_function_name = "${var.name}-emitter"
+  handler_function_name = "${var.name}-handler"
+}
+
 resource "aws_api_gateway_rest_api" "gh" {
-  name        = "${var.name}-codepipeline"
+  name        = "${var.name}-gw"
   description = "Webhook to catch GitHub events"
   tags = merge(
     var.tags,
     {
-      "Name" = format("%s", "${var.name}-codepipeline")
+      "Name" = format("%s", "${var.name}-gw")
     },
   )
 }
@@ -97,7 +102,7 @@ resource "aws_api_gateway_method_response" "method" {
 resource "aws_api_gateway_deployment" "gh" {
   depends_on  = [aws_api_gateway_integration.webhooks]
   rest_api_id = aws_api_gateway_rest_api.gh.id
-  stage_name  = "eng-dev-webhook"
+  stage_name  = var.name
 }
 
 #--------------------------------------------------------------------
@@ -112,30 +117,13 @@ resource "aws_lambda_permission" "lambda" {
   source_arn    = "arn:aws:execute-api:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.gh.id}/*/POST/"
 }
 
-resource "aws_lambda_function" "lambda" {
-  s3_bucket     = var.artifact_bucket
-  s3_key        = var.lambda_map["webhook_events_key"]
-  handler       = "main.lambda_handler"
-  function_name = var.name
-  role          = aws_iam_role.lambda.arn
-  memory_size   = var.lambda_memory
-  timeout       = var.lambda_timeout
-  runtime       = "python3.7"
-  tags = merge(
-    var.tags,
-    {
-      "Name" = format("%s", var.name)
-    },
-  )
-}
-
 resource "aws_iam_role" "lambda" {
-  name               = "${var.name}-codepipeline-lambda"
+  name               = "${var.name}-lambda"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
   tags = merge(
     var.tags,
     {
-      "Name" = format("%s", "${var.name}-codepipeline-lambda")
+      "Name" = format("%s", "${var.name}-lambda")
     },
   )
 
@@ -147,10 +135,27 @@ resource "aws_iam_role_policy_attachment" "lambda" {
 }
 
 resource "aws_iam_policy" "lambda" {
-  name        = "${var.name}-codepipeline-lambda"
+  name        = "${var.name}-lambda"
   path        = "/"
   description = "Allows Lambda to manage temporary CodePipeline projects for branches"
   policy      = data.aws_iam_policy_document.lambda_policy.json
+}
+
+resource "aws_lambda_function" "lambda" {
+  s3_bucket     = var.artifact_bucket
+  s3_key        = var.lambda_map["webhook_events_key"]
+  handler       = "main.lambda_handler"
+  function_name = local.emitter_function_name
+  role          = aws_iam_role.lambda.arn
+  memory_size   = var.lambda_memory
+  timeout       = var.lambda_timeout
+  runtime       = "python3.7"
+  tags = merge(
+    var.tags,
+    {
+      "Name" = format("%s", local.emitter_function_name)
+    },
+  )
 }
 
 #--------------------------------------------------------------------
@@ -162,7 +167,7 @@ resource "aws_lambda_function" "webhook-handler" {
   s3_bucket     = var.artifact_bucket
   s3_key        = var.lambda_map["webhook_handler_key"]
   handler       = "main.lambda_handler"
-  function_name = "eng-webhook-handler"
+  function_name = local.handler_function_name
   role          = aws_iam_role.lambda.arn
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout
@@ -177,7 +182,7 @@ resource "aws_lambda_function" "webhook-handler" {
   tags = merge(
     var.tags,
     {
-      "Name" = format("%s", "eng-webhook-handler")
+      "Name" = format("%s", local.handler_function_name)
     },
   )
 }
@@ -185,162 +190,89 @@ resource "aws_lambda_function" "webhook-handler" {
 #--------------------------------------------------------------------
 # Event Rules
 #--------------------------------------------------------------------
-resource "aws_cloudwatch_event_rule" "webhook" {
-  name        = "eng-ci-webhook-rule"
-  description = "eng-ci-webhook-rule"
-  tags = merge(
-    var.tags,
-    {
-      "Name" = format("%s", "eng-ci-webhook-rule")
-    },
-  )
-
-  event_pattern = <<EOF
-{
-  "source": [
-    "eng.ci.webhooks"
-  ],
-  "detail": {
-    "repository": [
-      "hmpps-delius-alfresco-shared-terraform"
-    ]
-  }
-}
-EOF
+resource "aws_cloudwatch_event_bus" "webhook" {
+  name = var.name
+  tags = var.tags
 }
 
-resource "aws_cloudwatch_event_target" "webhook" {
-  rule      = aws_cloudwatch_event_rule.webhook.name
-  target_id = "ci_webhook_events"
-  arn       = aws_cloudwatch_log_group.webhook.arn
-}
+# resource "aws_cloudwatch_event_rule" "webhook" {
+#   name        = "eng-ci-webhook-rule"
+#   description = "eng-ci-webhook-rule"
+#   tags = merge(
+#     var.tags,
+#     {
+#       "Name" = format("%s", "eng-ci-webhook-rule")
+#     },
+#   )
 
-resource "aws_cloudwatch_event_target" "handler" {
-  rule      = aws_cloudwatch_event_rule.webhook.name
-  target_id = "ci-webhook-handler"
-  arn       = aws_lambda_function.webhook-handler.arn
-  input_transformer {
-    input_paths    = { "action" = "$.detail.action", "branch" = "$.detail.source_branch", "repository" = "$.detail.repository" }
-    input_template = <<EOF
-{
-  "pipeline_name": "alf-infra-build-alfresco-dev",
-  "branch": <branch>,
-  "action": <action>,
-  "repository": <repository>
-}
-EOF
-  }
-}
+#   event_pattern = <<EOF
+# {
+#   "source": [
+#     "eng.ci.webhooks"
+#   ],
+#   "detail": {
+#     "repository": [
+#       "hmpps-delius-alfresco-shared-terraform"
+#     ]
+#   }
+# }
+# EOF
+# }
+
+# resource "aws_cloudwatch_event_target" "webhook" {
+#   rule      = aws_cloudwatch_event_rule.webhook.name
+#   target_id = "ci_webhook_events"
+#   arn       = aws_cloudwatch_log_group.webhook.arn
+# }
+
+# resource "aws_cloudwatch_event_target" "handler" {
+#   rule      = aws_cloudwatch_event_rule.webhook.name
+#   target_id = "ci-webhook-handler"
+#   arn       = aws_lambda_function.webhook-handler.arn
+#   input_transformer {
+#     input_paths    = { "action" = "$.detail.action", "branch" = "$.detail.source_branch", "repository" = "$.detail.repository" }
+#     input_template = <<EOF
+# {
+#   "pipeline_name": "alf-infra-build-alfresco-dev",
+#   "branch": <branch>,
+#   "action": <action>,
+#   "repository": <repository>,
+#   "source_key": 0
+# }
+# EOF
+#   }
+# }
 
 
 resource "aws_cloudwatch_log_group" "webhook" {
-  name              = "/aws/events/eng-webhook-events"
+  name              = "/aws/events/${var.name}"
   retention_in_days = var.retention_in_days
   tags = merge(
     var.tags,
     {
-      "Name" = format("%s", "/aws/events/eng-webhook-events")
+      "Name" = format("%s", "/aws/events/${var.name}")
     },
   )
 }
 
-resource "aws_cloudwatch_log_group" "eng-webhook-events" {
-  name              = "/aws/lambda/eng-webhook-events"
+resource "aws_cloudwatch_log_group" "emitter" {
+  name              = "/aws/lambda/${local.emitter_function_name}"
   retention_in_days = var.retention_in_days
   tags = merge(
     var.tags,
     {
-      "Name" = format("%s", "/aws/lambda/eng-webhook-events")
+      "Name" = format("%s", "/aws/lambda/${local.emitter_function_name}")
     },
   )
 }
 
-resource "aws_cloudwatch_log_group" "eng-webhook-handler" {
-  name              = "/aws/lambda/eng-webhook-handler"
+resource "aws_cloudwatch_log_group" "handler" {
+  name              = "/aws/lambda/${local.handler_function_name}"
   retention_in_days = var.retention_in_days
   tags = merge(
     var.tags,
     {
-      "Name" = format("%s", "/aws/lambda/eng-webhook-handler")
+      "Name" = format("%s", "/aws/lambda/${local.handler_function_name}")
     },
   )
 }
-
-
-#--------------------------------------------------------------------
-# CodePipeline & CodeBuild
-#--------------------------------------------------------------------
-
-#resource "aws_codepipeline" "codepipeline" {
-#  name     = var.name
-#  role_arn = var.iam_role_codepipeline
-#
-#  artifact_store {
-#    location = var.artifact_bucket
-#    type     = "S3"
-#
-#    encryption_key {
-#      id   = var.artifact_bucket_kms_key
-#      type = "KMS"
-#    }
-#  }
-#
-#  stage {
-#    name = "Source"
-#
-#    action {
-#      name             = "Source"
-#      category         = "Source"
-#      owner            = "ThirdParty"
-#      provider         = "GitHub"
-#      version          = "1"
-#      output_artifacts = ["source"]
-#
-#      configuration = {
-#        Owner      = var.github_organization
-#        Repo       = var.github_repository
-#        Branch     = var.github_branch_default
-#        OAuthToken = data.aws_ssm_parameter.github_oauth_token.value
-#      }
-#    }
-#  }
-#
-#  stage {
-#    name = "Build"
-#
-#    action {
-#      name            = "Build"
-#      category        = "Build"
-#      owner           = "AWS"
-#      provider        = "CodeBuild"
-#      input_artifacts = ["source"]
-#      version         = "1"
-#
-#      configuration = {
-#        ProjectName = aws_codebuild_project.codebuild.name
-#      }
-#    }
-#  }
-#}
-#
-#resource "aws_codebuild_project" "codebuild" {
-#  name          = var.name
-#  description   = "Build step for ${var.github_organization}/${var.github_repository}"
-#  build_timeout = "10"
-#  service_role  = var.iam_role_codebuild
-#
-#  artifacts {
-#    type = "CODEPIPELINE"
-#  }
-#
-#  environment {
-#    compute_type    = var.codebuild_compute_type
-#    image           = var.codebuild_image
-#    type            = var.codebuild_os
-#    privileged_mode = var.codebuild_privileged_mode
-#  }
-#
-#  source {
-#    type = "CODEPIPELINE"
-#  }
-#}
