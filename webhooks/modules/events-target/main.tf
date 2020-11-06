@@ -49,3 +49,15 @@ resource "aws_cloudwatch_event_target" "handler" {
 EOF
   }
 }
+
+resource "github_repository_webhook" "webhook" {
+  repository = var.event_target_map["repository"]
+  active     = true
+  events     = ["push", "create", "delete"]
+
+  configuration {
+    url          = var.event_target_map["api_gateway_invoke_url"]
+    content_type = "application/json"
+    insecure_ssl = false
+  }
+}
