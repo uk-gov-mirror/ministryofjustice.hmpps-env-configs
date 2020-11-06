@@ -3,9 +3,8 @@
 #--------------------------------------------------------------------
 
 resource "aws_cloudwatch_event_rule" "webhook" {
-  name           = var.event_target_map["name"]
-  description    = var.event_target_map["name"]
-  event_bus_name = var.event_target_map["event_bus_name"]
+  name        = var.event_target_map["name"]
+  description = var.event_target_map["name"]
   tags = merge(
     var.tags,
     {
@@ -30,7 +29,7 @@ EOF
 resource "aws_cloudwatch_event_target" "webhook" {
   rule      = aws_cloudwatch_event_rule.webhook.name
   target_id = "${var.event_target_map["name"]}-logs"
-  arn       = car.event_target_map["event_log_group_arn"]
+  arn       = var.event_target_map["event_log_group_arn"]
 }
 
 resource "aws_cloudwatch_event_target" "handler" {
@@ -41,7 +40,7 @@ resource "aws_cloudwatch_event_target" "handler" {
     input_paths    = { "action" = "$.detail.action", "branch" = "$.detail.source_branch", "repository" = "$.detail.repository" }
     input_template = <<EOF
 {
-  "pipeline_name": "${var.event_target_map["pipeline_name"]}",
+  "pipeline_name": "${var.event_target_map["name"]}",
   "branch": <branch>,
   "action": <action>,
   "repository": <repository>,

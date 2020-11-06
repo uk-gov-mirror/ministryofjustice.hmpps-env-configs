@@ -150,6 +150,12 @@ resource "aws_lambda_function" "lambda" {
   memory_size   = var.lambda_memory
   timeout       = var.lambda_timeout
   runtime       = "python3.7"
+  environment {
+    variables = {
+      EVENT_BUS_NAME = var.lambda_map["event_bus_name"],
+      EVENT_BUS_SOURCE_ID = var.lambda_map["event_bus_source_id"]
+    }
+  }
   tags = merge(
     var.tags,
     {

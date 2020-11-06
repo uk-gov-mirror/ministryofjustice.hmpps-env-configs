@@ -82,5 +82,7 @@ variable "lambda_map" {
   default = {
     webhook_handler_key = ""
     webhook_events_key  = ""
+    event_bus_name      = "default"
+    event_bus_source_id = "eng.ci.webhooks"
   }
 }

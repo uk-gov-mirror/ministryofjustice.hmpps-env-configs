@@ -9,6 +9,8 @@ module "eng-dev-webhooks" {
   lambda_map = {
     webhook_handler_key = local.webhook_handler_key
     webhook_events_key  = local.webhook_events_key
+    event_bus_name      = "default"
+    event_bus_source_id = "eng.ci.webhooks"
   }
 }
 
