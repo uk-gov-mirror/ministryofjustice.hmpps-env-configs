@@ -138,33 +138,6 @@ resource "aws_codepipeline" "pipeline" {
         )
       }
     }
-    action {
-      name            = "webhooks"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 1
-      configuration = {
-        ProjectName   = aws_codebuild_project.pipelines.id
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "COMPONENT",
-              "value" : "webhooks",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TASK",
-              "value" : "terraform",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
   }
   stage {
     name = "Security"
@@ -436,6 +409,36 @@ resource "aws_codepipeline" "pipeline" {
             {
               "name" : "COMPONENT",
               "value" : "ten10",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "TASK",
+              "value" : "terraform",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+  }
+  stage {
+    name = "Webhook-Management"
+    action {
+      name            = "webhooks"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 1
+      configuration = {
+        ProjectName   = aws_codebuild_project.pipelines.id
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "COMPONENT",
+              "value" : "webhooks",
               "type" : "PLAINTEXT"
             },
             {
