@@ -14,7 +14,7 @@
 # API Gateway
 #--------------------------------------------------------------------
 
-locals = {
+locals {
   emitter_function_name = "${var.name}-emitter"
   handler_function_name = "${var.name}-handler"
 }
@@ -190,11 +190,6 @@ resource "aws_lambda_function" "webhook-handler" {
 #--------------------------------------------------------------------
 # Event Rules
 #--------------------------------------------------------------------
-resource "aws_cloudwatch_event_bus" "webhook" {
-  name = var.name
-  tags = var.tags
-}
-
 # resource "aws_cloudwatch_event_rule" "webhook" {
 #   name        = "eng-ci-webhook-rule"
 #   description = "eng-ci-webhook-rule"
