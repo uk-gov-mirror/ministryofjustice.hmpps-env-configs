@@ -1,21 +1,20 @@
-resource "aws_codebuild_project" "tasks" {
-  name           = local.tasks_list[count.index]
-  description    = local.tasks_list[count.index]
+resource "aws_codebuild_project" "task_handler" {
+  name           = local.project_names["handler"]
+  description    = local.project_names["handler"]
   build_timeout  = "480"
   queued_timeout = "30"
   service_role   = data.terraform_remote_state.common.outputs.codebuild_info["iam_role_arn"]
   tags = merge(
     local.tags,
     {
-      "Name" = local.tasks_list[count.index]
+      "Name" = local.project_names["handler"]
     },
   )
-  count = length(local.tasks_list)
 
   logs_config {
     cloudwatch_logs {
       group_name  = data.terraform_remote_state.common.outputs.codebuild_info["log_group"]
-      stream_name = local.tasks_list[count.index]
+      stream_name = local.project_names["handler"]
     }
   }
 
@@ -25,7 +24,7 @@ resource "aws_codebuild_project" "tasks" {
 
   source {
     type      = "CODEPIPELINE"
-    buildspec = "pipelines/${local.tasks_list[count.index]}.yml"
+    buildspec = "pipelines/${local.project_names["handler"]}.yml"
   }
 
   environment {
