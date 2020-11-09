@@ -21,7 +21,7 @@ resource "aws_codepipeline" "pipeline" {
         Owner                = "ministryofjustice"
         Repo                 = "hmpps-engineering-pipelines"
         Branch               = "develop"
-        PollForSourceChanges = true
+        PollForSourceChanges = false
       }
     }
   }
