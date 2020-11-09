@@ -40,3 +40,9 @@
 
     - name: import GitHub access token into CodeBuild and store the ARN in parameter store
       include: projects/common/credentials/github.yml
+
+    - name: Codepipeline webhoo secret
+      include: projects/common/webhooks/secret_key.yml
+
+    - name: create ten10 pipelines
+      include: projects/ten10.yml
