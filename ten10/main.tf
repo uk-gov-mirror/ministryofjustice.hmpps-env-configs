@@ -15,9 +15,12 @@ locals {
     data.terraform_remote_state.vpc.outputs.private-subnet-az2,
     data.terraform_remote_state.vpc.outputs.private-subnet-az3,
   ]
-  region       = var.region
-  tags         = var.tags
-  compute_type = "BUILD_GENERAL1_SMALL"
+  region           = var.region
+  tags             = var.tags
+  compute_type     = "BUILD_GENERAL1_SMALL"
+  artefacts_bucket = data.terraform_remote_state.common.outputs.codebuild_info["artefacts_bucket"]
+  pipeline_bucket  = data.terraform_remote_state.common.outputs.codebuild_info["pipeline_bucket"]
+  iam_role_arn     = data.terraform_remote_state.common.outputs.codebuild_info["iam_role_arn"]
   images = {
     docker = var.code_build["docker_image"]
     python = var.code_build["python_image"]
