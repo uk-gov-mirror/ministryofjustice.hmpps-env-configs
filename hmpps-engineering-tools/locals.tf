@@ -53,6 +53,7 @@ codebuild_project_names_stage_1_docker = {
     "ansible-builder-2-7"       = "${local.common_name}-ansible-builder-2-7"
     "terraform-builder-0-11-14" = "${local.common_name}-terraform-builder-0-11-14"
     "terraform-builder-0-12"    = "${local.common_name}-terraform-builder-0-12"
+    "terraform-builder-0-13"    = "${local.common_name}-terraform-builder-0-13"
     "jenkins"                   = "${local.common_name}-jenkins"
     "base-java"                 = "${local.common_name}-base-java"
     "base-openrc"               = "${local.common_name}-base-openrc"
