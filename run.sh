@@ -27,8 +27,6 @@ else
     env_config_dir="${HMPPS_BUILD_WORK_DIR}/env_configs"
 fi
 
-echo "env_config_dir is ${env_config_dir}"
-
 ENVIRONMENT_NAME_ARG=$1
 ACTION_TYPE=$2
 COMPONENT=${3}
