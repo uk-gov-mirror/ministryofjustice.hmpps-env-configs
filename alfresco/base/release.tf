@@ -29,10 +29,11 @@ resource "aws_codebuild_project" "release" {
   }
 
   environment {
-    compute_type    = local.compute_type
-    image           = local.images["python"]
-    type            = local.type
-    privileged_mode = true
+    compute_type                = local.compute_type
+    image                       = local.images["python"]
+    type                        = local.type
+    image_pull_credentials_type = "SERVICE_ROLE"
+    privileged_mode             = true
   }
 }
 
