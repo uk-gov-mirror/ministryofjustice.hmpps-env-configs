@@ -82,10 +82,9 @@ resource "aws_codebuild_project" "tasks_aws" {
   }
 
   environment {
-    compute_type                = local.compute_type
-    image                       = "aws/codebuild/amazonlinux2-x86_64-standard:3.0"
-    type                        = local.type
-    image_pull_credentials_type = "SERVICE_ROLE"
-    privileged_mode             = true
+    compute_type    = local.compute_type
+    image           = "aws/codebuild/amazonlinux2-x86_64-standard:3.0"
+    type            = local.type
+    privileged_mode = true
   }
 }
