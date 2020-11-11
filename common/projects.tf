@@ -29,9 +29,10 @@ resource "aws_codebuild_project" "pipelines" {
   }
 
   environment {
-    compute_type = local.compute_type
-    image        = local.images["terraform"]
-    type         = local.type
+    compute_type                = local.compute_type
+    image                       = local.images["terraform"]
+    type                        = local.type
+    image_pull_credentials_type = "SERVICE_ROLE"
 
     environment_variable {
       name  = "RUNNING_IN_CONTAINER"
@@ -76,9 +77,10 @@ resource "aws_codebuild_project" "ansible2" {
   }
 
   environment {
-    compute_type = local.compute_type
-    image        = local.images["ansible2"]
-    type         = local.type
+    compute_type                = local.compute_type
+    image                       = local.images["ansible2"]
+    type                        = local.type
+    image_pull_credentials_type = "SERVICE_ROLE"
 
     environment_variable {
       name  = "RUNNING_IN_CONTAINER"
@@ -121,9 +123,10 @@ resource "aws_codebuild_project" "ansible3" {
   }
 
   environment {
-    compute_type = local.compute_type
-    image        = local.images["ansible3"]
-    type         = local.type
+    compute_type                = local.compute_type
+    image                       = local.images["ansible3"]
+    type                        = local.type
+    image_pull_credentials_type = "SERVICE_ROLE"
 
     environment_variable {
       name  = "RUNNING_IN_CONTAINER"
@@ -167,9 +170,10 @@ resource "aws_codebuild_project" "python3" {
   }
 
   environment {
-    compute_type = local.compute_type
-    image        = local.images["ansible3"]
-    type         = local.type
+    compute_type                = local.compute_type
+    image                       = local.images["ansible3"]
+    type                        = local.type
+    image_pull_credentials_type = "SERVICE_ROLE"
   }
 }
 

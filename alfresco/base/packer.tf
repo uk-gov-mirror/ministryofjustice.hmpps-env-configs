@@ -29,10 +29,11 @@ resource "aws_codebuild_project" "ami" {
   }
 
   environment {
-    compute_type    = local.compute_type
-    image           = local.images["packer"]
-    type            = local.type
-    privileged_mode = true
+    compute_type                = local.compute_type
+    image                       = local.images["packer"]
+    type                        = local.type
+    image_pull_credentials_type = "SERVICE_ROLE"
+    privileged_mode             = true
 
     environment_variable {
       name  = "DOCKER_CERTS_DIR"
@@ -40,7 +41,7 @@ resource "aws_codebuild_project" "ami" {
     }
   }
   vpc_config {
-    vpc_id = local.vpc_id
+    vpc_id  = local.vpc_id
     subnets = local.private_subnet_ids
 
     security_group_ids = [

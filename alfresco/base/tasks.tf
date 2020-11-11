@@ -29,10 +29,11 @@ resource "aws_codebuild_project" "tasks" {
   }
 
   environment {
-    compute_type    = local.compute_type
-    image           = local.images["docker"]
-    type            = local.type
-    privileged_mode = true
+    compute_type                = local.compute_type
+    image                       = local.images["docker"]
+    type                        = local.type
+    image_pull_credentials_type = "SERVICE_ROLE"
+    privileged_mode             = true
 
     environment_variable {
       name  = "DOCKER_CERTS_DIR"
