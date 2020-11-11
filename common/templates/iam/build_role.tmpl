@@ -30,7 +30,12 @@
       "Effect": "Allow",
       "Sid": "S3Access",
       "Action": [
-        "s3:*"
+        "s3:*",
+        "kms:Decrypt",
+        "kms:Encrypt",
+        "kms:ReEncrypt*",
+        "kms:DescribeKey",
+        "kms:GenerateDataKey*"
       ],
       "Resource": [
         "${s3_bucket_arn}",
@@ -46,7 +51,11 @@
         "arn:aws:s3:::hmpps-eng-dev-alfresco-rpms",
         "arn:aws:s3:::hmpps-eng-dev-alfresco-rpms/*",
         "arn:aws:s3:::tf-eu-west-2-hmpps-eng-dev-config-s3bucket",
-        "arn:aws:s3:::tf-eu-west-2-hmpps-eng-dev-config-s3bucket/*"
+        "arn:aws:s3:::tf-eu-west-2-hmpps-eng-dev-config-s3bucket/*",
+        "arn:aws:s3:::tf-eu-west-2-hmpps-eng-dev-certificates-private-s3bucket",
+        "arn:aws:s3:::tf-eu-west-2-hmpps-eng-dev-certificates-private-s3bucket/*",
+        "arn:aws:kms:eu-west-2:895523100917:key/*",
+        "arn:aws:kms:eu-west-2:723123699647:key/*"
       ]
     },
     {
