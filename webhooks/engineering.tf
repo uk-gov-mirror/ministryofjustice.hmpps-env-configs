@@ -4,7 +4,7 @@ module "eng-lambda-functions-builder" {
     name                = "eng-lambda-functions-builder"
     repository          = "hmpps-engineering-lambda-functions"
     source_key          = "0"
-    event_source        = local.webhook_info["event_bus_source_id"]
+    event_source        = local.webhook_info["dipatcher_bus_source_id"]
     event_log_group_arn = local.webhook_info["event_log_group_arn"]
     lambda_handler_arn  = local.webhook_info["lambda_handler_arn"]
     webhook_invoke_url  = local.webhook_info["webhook_invoke_url"]
@@ -18,7 +18,7 @@ module "create-pipelines-eng-dev" {
     name                = "create-pipelines-eng-dev"
     repository          = "hmpps-engineering-pipelines"
     source_key          = "0"
-    event_source        = local.webhook_info["event_bus_source_id"]
+    event_source        = local.webhook_info["dipatcher_bus_source_id"]
     event_log_group_arn = local.webhook_info["event_log_group_arn"]
     lambda_handler_arn  = local.webhook_info["lambda_handler_arn"]
     webhook_invoke_url  = local.webhook_info["webhook_invoke_url"]

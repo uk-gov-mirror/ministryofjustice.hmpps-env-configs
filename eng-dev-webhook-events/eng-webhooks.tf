@@ -136,6 +136,13 @@ resource "aws_s3_bucket_object" "webhook_events" {
   etag   = filemd5(local.webhook_events_payload_file)
 }
 
+resource "aws_s3_bucket_object" "webhook_dispatcher" {
+  bucket = aws_s3_bucket.webhook.id
+  key    = local.webhook_dispatcher_key
+  source = local.webhook_dispatcher_payload_file
+  etag   = filemd5(local.webhook_dispatcher_payload_file)
+}
+
 resource "aws_s3_bucket_object" "webhook_handler" {
   bucket = aws_s3_bucket.webhook.id
   key    = local.webhook_handler_key
@@ -209,6 +216,30 @@ resource "aws_lambda_function" "lambda" {
   depends_on = [aws_s3_bucket_object.webhook_events]
 }
 
+resource "aws_lambda_function" "dispatcher" {
+  s3_bucket     = aws_s3_bucket.webhook.id
+  s3_key        = local.webhook_dispatcher_key
+  handler       = "main.lambda_handler"
+  function_name = local.dispatcher_function_name
+  role          = aws_iam_role.lambda.arn
+  memory_size   = 256
+  timeout       = 60
+  runtime       = "python3.7"
+  environment {
+    variables = {
+      EVENT_BUS_NAME      = local.event_bus_name,
+      EVENT_BUS_SOURCE_ID = local.dispatcher_bus_source_id
+    }
+  }
+  tags = merge(
+    var.tags,
+    {
+      "Name" = format("%s", local.dispatcher_function_name)
+    },
+  )
+  depends_on = [aws_s3_bucket_object.webhook_dispatcher]
+}
+
 resource "aws_lambda_function" "webhook-handler" {
   s3_bucket     = aws_s3_bucket.webhook.id
   s3_key        = local.webhook_handler_key
@@ -263,6 +294,28 @@ resource "aws_cloudwatch_log_group" "handler" {
     var.tags,
     {
       "Name" = format("%s", "/aws/lambda/${local.handler_function_name}")
+    },
+  )
+}
+
+resource "aws_cloudwatch_log_group" "dispatcher" {
+  name              = "/aws/lambda/${local.dispatcher_function_name}"
+  retention_in_days = 7
+  tags = merge(
+    var.tags,
+    {
+      "Name" = format("%s", "/aws/lambda/${local.dispatcher_function_name}")
+    },
+  )
+}
+
+resource "aws_cloudwatch_log_group" "dispatch_events" {
+  name              = "/aws/events/${local.dispatcher_function_name}"
+  retention_in_days = 7
+  tags = merge(
+    var.tags,
+    {
+      "Name" = format("%s", "/aws/events/${local.dispatcher_function_name}")
     },
   )
 }
