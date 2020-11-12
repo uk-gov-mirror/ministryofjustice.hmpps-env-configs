@@ -82,6 +82,8 @@ data "aws_iam_policy_document" "lambda_policy" {
       "codepipeline:StartPipelineExecution",
       "iam:PassRole",
       "events:PutEvents",
+      "events:CreateEventBus",
+      "events:DescribeEventBus"
     ]
   }
 
