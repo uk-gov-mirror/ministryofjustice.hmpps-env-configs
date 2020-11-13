@@ -7,7 +7,7 @@ resource "aws_security_group" "dockerimagebuilder_client_security_group" {
   description = "security group for ${var.environment_identifier}-vpc-dockerimagebuilder-internal-access"
   vpc_id      = data.terraform_remote_state.vpc.outputs.vpc_id
   tags = merge(
-      var.tags,
+      local.tags,
       {
         "Name" = "${var.environment_identifier}-dockerimagebuilder-client-sg"
         "Type" = "Private"
@@ -197,7 +197,7 @@ resource "aws_security_group" "dockerimagebuilder_instance_security_group" {
   description = "${var.environment} security group for ${var.environment_identifier}-dockerimagebuilder"
   vpc_id      = data.terraform_remote_state.vpc.outputs.vpc_id
   tags = merge(
-      var.tags,
+      local.tags,
       {
         "Name" = "${var.environment_identifier}-dockerimagebuilder-instance-sg"
         "Type" = "Private"

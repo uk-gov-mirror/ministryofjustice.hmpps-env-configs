@@ -1,7 +1,7 @@
 resource "aws_codepipeline" "pipeline" {
   name     = "create-pipelines-eng-dev"
   role_arn = aws_iam_role.codebuild.arn
-  tags     = var.tags
+  tags     = local.tags
 
   artifact_store {
     type     = "S3"

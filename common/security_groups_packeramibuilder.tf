@@ -7,7 +7,7 @@ resource "aws_security_group" "packerbuilder_client_security_group" {
   description = "security group for ${var.environment_identifier}-vpc-packerbuilder-internal-access"
   vpc_id      = data.terraform_remote_state.vpc.outputs.vpc_id
   tags = merge(
-      var.tags,
+      local.tags,
       {
         "Name" = "${var.environment_identifier}-packerbuilder-client-sg"
         "Type" = "Private"
@@ -197,7 +197,7 @@ resource "aws_security_group" "packerbuilder_instance_security_group" {
   description = "${var.environment} security group for ${var.environment_identifier}-packerbuilder"
   vpc_id      = data.terraform_remote_state.vpc.outputs.vpc_id
   tags = merge(
-      var.tags,
+      local.tags,
       {
         "Name" = "${var.environment_identifier}-packerbuilder-instance-sg"
         "Type" = "Private"
