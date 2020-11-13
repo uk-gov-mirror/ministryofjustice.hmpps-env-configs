@@ -2,7 +2,7 @@ resource "aws_security_group" "webhook" {
   name        = local.name
   description = "security group for ${local.name}"
   vpc_id      = local.vpc_id
-  tags        = var.tags
+  tags        = local.tags
 
   lifecycle {
     create_before_destroy = true
@@ -36,7 +36,7 @@ resource "aws_lb" "webhook" {
   security_groups            = [aws_security_group.webhook.id]
   subnets                    = local.public_subnet_ids
   enable_deletion_protection = false
-  tags                       = var.tags
+  tags                       = local.tags
 
   lifecycle {
     create_before_destroy = true
@@ -51,7 +51,7 @@ resource "aws_lb" "webhook" {
 resource "aws_lb_target_group" "webhook" {
   name        = local.name
   target_type = "lambda"
-  tags        = var.tags
+  tags        = local.tags
 }
 
 resource "aws_lb_listener" "https" {
@@ -126,7 +126,7 @@ resource "aws_s3_bucket" "webhook" {
     }
   }
 
-  tags = var.tags
+  tags = local.tags
 }
 
 resource "aws_s3_bucket_object" "webhook_events" {
@@ -170,7 +170,7 @@ resource "aws_iam_role" "lambda" {
   name               = "${local.name}-lambda"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
   tags = merge(
-    var.tags,
+    local.tags,
     {
       "Name" = format("%s", "${local.name}-lambda")
     },
@@ -208,7 +208,7 @@ resource "aws_lambda_function" "lambda" {
     }
   }
   tags = merge(
-    var.tags,
+    local.tags,
     {
       "Name" = format("%s", local.emitter_function_name)
     },
@@ -232,7 +232,7 @@ resource "aws_lambda_function" "dispatcher" {
     }
   }
   tags = merge(
-    var.tags,
+    local.tags,
     {
       "Name" = format("%s", local.dispatcher_function_name)
     },
@@ -257,7 +257,7 @@ resource "aws_lambda_function" "webhook-handler" {
     }
   }
   tags = merge(
-    var.tags,
+    local.tags,
     {
       "Name" = format("%s", local.handler_function_name)
     },
@@ -269,7 +269,7 @@ resource "aws_cloudwatch_log_group" "webhook" {
   name              = "/aws/events/${local.name}"
   retention_in_days = 7
   tags = merge(
-    var.tags,
+    local.tags,
     {
       "Name" = format("%s", "/aws/events/${local.name}")
     },
@@ -280,7 +280,7 @@ resource "aws_cloudwatch_log_group" "emitter" {
   name              = "/aws/lambda/${local.emitter_function_name}"
   retention_in_days = 7
   tags = merge(
-    var.tags,
+    local.tags,
     {
       "Name" = format("%s", "/aws/lambda/${local.emitter_function_name}")
     },
@@ -291,7 +291,7 @@ resource "aws_cloudwatch_log_group" "handler" {
   name              = "/aws/lambda/${local.handler_function_name}"
   retention_in_days = 7
   tags = merge(
-    var.tags,
+    local.tags,
     {
       "Name" = format("%s", "/aws/lambda/${local.handler_function_name}")
     },
@@ -302,7 +302,7 @@ resource "aws_cloudwatch_log_group" "dispatcher" {
   name              = "/aws/lambda/${local.dispatcher_function_name}"
   retention_in_days = 7
   tags = merge(
-    var.tags,
+    local.tags,
     {
       "Name" = format("%s", "/aws/lambda/${local.dispatcher_function_name}")
     },
@@ -313,7 +313,7 @@ resource "aws_cloudwatch_log_group" "dispatch_events" {
   name              = "/aws/events/${local.dispatcher_function_name}"
   retention_in_days = 7
   tags = merge(
-    var.tags,
+    local.tags,
     {
       "Name" = format("%s", "/aws/events/${local.dispatcher_function_name}")
     },

@@ -7,7 +7,7 @@ module "alfresco-dev" {
   repo_name        = "hmpps-delius-alfresco-shared-terraform"
   repo_branch      = "develop"
   environments     = ["alfresco-dev"]
-  tags             = var.tags
+  tags             = local.tags
   projects         = local.projects
 }
 
@@ -20,7 +20,7 @@ module "integration-envs" {
   repo_name        = "hmpps-alfresco-infra-versions"
   repo_branch      = "develop"
   environments     = ["delius-core-dev", "delius-int", "delius-auto-test"]
-  tags             = var.tags
+  tags             = local.tags
   projects         = local.projects
 }
 
@@ -33,7 +33,7 @@ module "protected-envs" {
   repo_name        = "hmpps-alfresco-infra-versions"
   repo_branch      = "develop"
   environments     = local.protected_envs
-  tags             = var.tags
+  tags             = local.tags
   projects         = local.projects
 }
 
@@ -46,6 +46,6 @@ module "release-pipeline" {
   repo_name        = "hmpps-alfresco-infra-versions"
   repo_branch      = "develop"
   environments     = local.protected_envs
-  tags             = var.tags
+  tags             = local.tags
   projects         = local.projects
 }

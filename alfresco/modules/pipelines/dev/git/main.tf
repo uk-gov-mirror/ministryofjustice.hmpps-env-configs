@@ -718,49 +718,4 @@ resource "aws_codepipeline" "pipeline" {
       }
     }
   }
-  stage {
-    name = "create-release-package"
-    action {
-      name            = "build"
-      input_artifacts = ["code"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 1
-      configuration = {
-        ProjectName   = "alfresco-infra-release"
-        PrimarySource = "code"
-        EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "GITHUB_REPO",
-              "value" : var.repo_name,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "GITHUB_ORG",
-              "value" : var.repo_owner,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
-              "type" : "PLAINTEXT"
-            }
-          ]
-        )
-      }
-    }
-  }
 }

@@ -24,6 +24,7 @@ locals {
   event_bus_name                  = "default"
   event_bus_source_id             = "eng.ci.webhooks"
   dispatcher_bus_source_id        = "eng.ci.dispatcher"
+  tags                            = data.terraform_remote_state.common.outputs.tags
   dns_host                        = "${local.name}.${data.terraform_remote_state.vpc.outputs.public_zone_name}"
   public_subnet_ids = [
     data.terraform_remote_state.vpc.outputs.public-subnet-az1,

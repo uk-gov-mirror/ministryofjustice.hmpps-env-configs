@@ -7,4 +7,5 @@ locals {
     terraform = data.terraform_remote_state.base.outputs.projects["terraform"]
     ansible   = "hmpps-eng-builds-ansible3"
   }
+  tags = data.terraform_remote_state.common.outputs.tags
 }

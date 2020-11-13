@@ -15,10 +15,11 @@ locals {
     data.terraform_remote_state.vpc.outputs.private-subnet-az2,
     data.terraform_remote_state.vpc.outputs.private-subnet-az3,
   ]
-  region          = var.region
-  tags            = var.tags
-  compute_type    = "BUILD_GENERAL1_SMALL"
-  release_project = "alfresco-infra-release"
+  region           = var.region
+  tags             = data.terraform_remote_state.common.outputs.tags
+  artefacts_bucket = data.terraform_remote_state.common.outputs.codebuild_info["artefacts_bucket"]
+  compute_type     = "BUILD_GENERAL1_SMALL"
+  release_project  = "alfresco-infra-release"
   images = {
     terraform = var.code_build["terraform_image"]
     docker    = var.code_build["docker_image"]
@@ -27,10 +28,10 @@ locals {
   }
   type = "LINUX_CONTAINER"
   project_names = {
-    prepare       = "alfresco-prepare"
-    refresh       = "alfresco-refresh"
-    handler       = "alfresco-task-handler"
-    terraform     = "alfresco-terraform"
+    prepare   = "alfresco-prepare"
+    refresh   = "alfresco-refresh"
+    handler   = "alfresco-task-handler"
+    terraform = "alfresco-terraform"
   }
   project_list = [
     local.project_names["prepare"],
