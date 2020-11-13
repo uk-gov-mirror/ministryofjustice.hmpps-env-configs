@@ -10,4 +10,5 @@ locals {
     ansible2 = "hmpps-eng-builds-ansible2"
   }
   environments = ["alfresco-dev"]
+  tags         = data.terraform_remote_state.common.outputs.tags
 }

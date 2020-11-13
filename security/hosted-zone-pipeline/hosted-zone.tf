@@ -7,6 +7,6 @@ module "zones-pipeline" {
   repo_name        = "hmpps-ansible-playbooks"
   repo_branch      = "master"
   environments     = local.environments
-  tags             = var.tags
+  tags             = local.tags
   projects         = local.projects
 }

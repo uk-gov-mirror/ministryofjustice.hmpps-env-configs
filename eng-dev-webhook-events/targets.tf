@@ -6,7 +6,7 @@ resource "aws_cloudwatch_event_rule" "dispatcher" {
   name        = local.dispatcher_function_name
   description = local.dispatcher_function_name
   tags = merge(
-    var.tags,
+    local.tags,
     {
       "Name" = format("%s", local.dispatcher_function_name)
     },

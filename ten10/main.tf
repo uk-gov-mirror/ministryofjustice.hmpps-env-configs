@@ -16,7 +16,7 @@ locals {
     data.terraform_remote_state.vpc.outputs.private-subnet-az3,
   ]
   region           = var.region
-  tags             = var.tags
+  tags             = data.terraform_remote_state.common.outputs.tags
   compute_type     = "BUILD_GENERAL1_SMALL"
   artefacts_bucket = data.terraform_remote_state.common.outputs.codebuild_info["artefacts_bucket"]
   pipeline_bucket  = data.terraform_remote_state.common.outputs.codebuild_info["pipeline_bucket"]

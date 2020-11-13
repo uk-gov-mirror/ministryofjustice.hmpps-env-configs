@@ -34,3 +34,7 @@ output "dockerimagebuilder_info" {
     client_security_group     = aws_security_group.dockerimagebuilder_client_security_group.id
   }
 }
+
+output "tags" {
+  value = local.tags
+}

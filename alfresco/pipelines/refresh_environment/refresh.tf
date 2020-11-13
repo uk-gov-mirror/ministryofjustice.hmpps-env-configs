@@ -2,7 +2,7 @@ resource "aws_codepipeline" "refresh" {
   for_each = toset(local.refresh_environments)
   name     = format("${local.prefix}-%s", each.key)
   role_arn = data.terraform_remote_state.common.outputs.codebuild_info["iam_role_arn"]
-  tags     = var.tags
+  tags     = local.tags
 
   artifact_store {
     type     = "S3"

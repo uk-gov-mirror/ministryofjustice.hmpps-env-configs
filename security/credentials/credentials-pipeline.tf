@@ -7,6 +7,6 @@ module "secrets-pipeline" {
   repo_name        = "hmpps-env-configs"
   repo_branch      = "master"
   environments     = local.environments
-  tags             = var.tags
+  tags             = local.tags
   projects         = local.projects
 }

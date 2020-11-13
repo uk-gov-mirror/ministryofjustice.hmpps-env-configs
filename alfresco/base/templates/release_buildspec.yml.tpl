@@ -1,0 +1,46 @@
+---
+version: 0.2
+
+env:
+  variables:
+    TARGET_PIPELINE_NAME: alf-infra-build-delius-core-dev
+    PRE_BUILD_ACTION: "lambda_packages"
+    PRE_BUILD_TARGET: "functions"
+  parameter-store:
+    HMPPS_GITHUB_USER: "/dev/jenkins/hmpps/integration/user/name"
+    HMPPS_GITHUB_TOKEN: "/manually/created/engineering/dev/codepipeline/github/accesstoken"
+    HMPPS_GITHUB_EMAIL: "/jenkins/github/email"
+
+phases:
+  pre_build:
+    commands:
+      - source configs/common.properties
+      - git config --global advice.detachedHead false
+      - sh scripts/pre-build.sh
+  build:
+    commands:
+      - python utils/manage.py create-release -b develop -sha $CODEBUILD_RESOLVED_SOURCE_VERSION
+      - sleep 15
+      - rm -rf builds
+      - echo "REPO set to $GITHUB_REPO"
+      - export PACKAGE_VERSION=$(python utils/manage.py get-version)
+      - git clone -b $PACKAGE_VERSION https://github.com/ministryofjustice/$GITHUB_REPO.git builds/
+      - git clone -b $ENV_CONFIGS_VERSION $ENV_CONFIGS_REPO builds/env_configs
+      - echo "export PACKAGE_VERSION=$PACKAGE_VERSION" > builds/output.txt
+      - echo "export ENV_CONFIGS_VERSION=$ENV_CONFIGS_VERSION" >> builds/output.txt
+      - cat builds/output.txt
+      - rm -rf builds/pipelines/*.yml
+      - mv $CODEBUILD_SRC_DIR/functions builds/
+      - tar cf $PACKAGE_NAME builds
+      - aws s3 cp --only-show-errors $PACKAGE_NAME s3://$ARTEFACTS_BUCKET/projects/alfresco/infrastructure/$PACKAGE_VERSION/$PACKAGE_NAME
+      - aws s3 cp --only-show-errors $PACKAGE_NAME s3://$ARTEFACTS_BUCKET/projects/alfresco/infrastructure/latest/$PACKAGE_NAME
+      - aws s3 cp --only-show-errors builds/output.txt s3://$ARTEFACTS_BUCKET/projects/alfresco/infrastructure/$PACKAGE_VERSION/output.txt
+      - aws s3 cp --only-show-errors builds/output.txt s3://$ARTEFACTS_BUCKET/projects/alfresco/infrastructure/latest.txt
+      - aws codepipeline start-pipeline-execution --name alf-infra-build-delius-core-dev
+      - aws codepipeline start-pipeline-execution --name alf-infra-build-delius-int
+      - aws codepipeline start-pipeline-execution --name alf-infra-build-delius-auto-test
+
+artifacts:
+  base-directory: '$${CODEBUILD_SRC_DIR}'
+  files:
+    - '**/*'

@@ -12,7 +12,7 @@ module "rds-restore" {
     "alfresco-dev",
     "delius-pre-prod"
   ]
-  tags     = var.tags
+  tags     = local.tags
   projects = local.projects
 }
 
@@ -30,7 +30,7 @@ module "rds-snapshots" {
     "delius-perf",
     "delius-pre-prod"
   ]
-  tags     = var.tags
+  tags     = local.tags
   projects = local.projects
 }
 
@@ -45,7 +45,7 @@ module "rds-snapshot-prod" {
   environments = [
     "delius-prod"
   ]
-  tags        = var.tags
+  tags        = local.tags
   projects    = local.projects
   prod_target = "yes"
 }

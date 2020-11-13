@@ -6,5 +6,5 @@ module "functions-pipeline" {
   iam_role_arn     = local.iam_role_arn
   repo_name        = "hmpps-engineering-lambda-functions"
   repo_branch      = "develop"
-  tags             = var.tags
+  tags             = local.tags
 }

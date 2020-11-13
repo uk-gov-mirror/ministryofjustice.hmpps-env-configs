@@ -19,6 +19,6 @@ module "backup-pipelines" {
     "delius-int",
     "alfresco-dev"
   ]
-  tags     = var.tags
+  tags     = local.tags
   projects = local.projects
 }
