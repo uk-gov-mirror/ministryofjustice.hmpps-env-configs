@@ -22,7 +22,7 @@ oracle_backup_schedule = {
 
 oracle_flashback_schedule = {
   delius = {
-    restorepoint   =  "DOESNOTEXIST"
+    restorepoint   =  "DELIBERATELYBROKEN"
     schedule       =  "30 06 ? * 2 *"
   }
 }
