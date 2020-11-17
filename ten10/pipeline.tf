@@ -20,7 +20,7 @@ resource "aws_codepipeline" "pipeline" {
       configuration = {
         Owner                = "ministryofjustice"
         Repo                 = "ndelius-serenity-automation"
-        Branch               = "ALS-578"
+        Branch               = "develop"
         PollForSourceChanges = false
       }
     }
