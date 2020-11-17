@@ -23,6 +23,7 @@ variable "code_build" {
   default = {
     github_org          = "ministryofjustice"
     infra_repo          = "hmpps-delius-alfresco-shared-terraform"
+    packer_repo         = "hmpps-alfresco-packer"
     jenkins_token_ssm   = "/jenkins/github/accesstoken"
     artifact_expiration = 90
     terraform_image     = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/terraform-builder-lite:latest"
