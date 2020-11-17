@@ -30,9 +30,10 @@ resource "aws_codebuild_project" "projects" {
   }
 
   environment {
-    compute_type = local.compute_type
-    image        = local.images["terraform"]
-    type         = local.type
+    compute_type                = local.compute_type
+    image                       = local.images["terraform"]
+    type                        = local.type
+    image_pull_credentials_type = "SERVICE_ROLE"
 
     environment_variable {
       name  = "RUNNING_IN_CONTAINER"
@@ -40,4 +41,3 @@ resource "aws_codebuild_project" "projects" {
     }
   }
 }
-

@@ -19,7 +19,7 @@ locals {
   tags            = var.tags
   compute_type    = "BUILD_GENERAL1_SMALL"
   images = {
-    terraform = "mojdigitalstudio/hmpps-terraform-builder-0-11-14"
+    terraform = var.code_build["terraform_image"]
   }
   type = "LINUX_CONTAINER"
   project_names = {
