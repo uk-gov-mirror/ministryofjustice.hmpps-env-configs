@@ -3,7 +3,7 @@ version: 0.2
 
 env:
   variables:
-    ENV_CONFIG_DIR: "account_configs"
+    ENV_CONFIG_DIR: "env_configs"
     RUN_SHELL_SRC: "scripts/engineering"
 
 phases:
@@ -16,6 +16,7 @@ phases:
   build:
     commands:
       - export HMPPS_BUILD_WORK_DIR=$CODEBUILD_SRC_DIR
+      - source $ENV_CONFIG_DIR/$ENVIRONMENT_NAME.properties
       - make $TASK component=$COMPONENT
 
 artifacts:
