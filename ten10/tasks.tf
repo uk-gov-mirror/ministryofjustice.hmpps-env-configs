@@ -31,7 +31,7 @@ resource "aws_codebuild_project" "task_handler" {
     compute_type    = local.compute_type
     image           = local.images["docker"]
     type            = local.type
-    privileged_mode = true
+    privileged_mode = local.privileged_mode
   }
   vpc_config {
     vpc_id             = local.vpc_id

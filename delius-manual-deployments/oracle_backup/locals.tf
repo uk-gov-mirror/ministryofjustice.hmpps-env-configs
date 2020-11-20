@@ -72,11 +72,11 @@ locals {
   # CodeBuild - Environment
   #======================
   build_environment_spec = {
-    compute_type    = "BUILD_GENERAL1_MEDIUM"
-    image_pull_credentials_type = "CODEBUILD"
-    image = var.code_build.ansible_image
-    type = "LINUX_CONTAINER"
-    privileged_mode = true
+    compute_type                = "BUILD_GENERAL1_MEDIUM"
+    image_pull_credentials_type = "SERVICE_ROLE"
+    image                       = var.code_build.ansible_image
+    type                        = "LINUX_CONTAINER"
+    privileged_mode             = local.build_environment_spec.privileged_mode
 
     environment_variables = [
       {

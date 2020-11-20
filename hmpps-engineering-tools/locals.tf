@@ -152,7 +152,7 @@ codebuild_project_names_stage_1_docker = {
     }
     type = "LINUX_CONTAINER"
     image_pull_credentials_type = "CODEBUILD"
-    privileged_mode = true
+    privileged_mode             = false
 
     environment_variables = [
       {

@@ -96,8 +96,8 @@ locals {
       packer    = data.terraform_remote_state.common.outputs.codebuild_info["packerbuilder_image"]
     }
     type = "LINUX_CONTAINER"
-    image_pull_credentials_type = "CODEBUILD"
-    privileged_mode = true
+    image_pull_credentials_type = "SERVICE_ROLE"
+     privileged_mode             = false
 
     environment_variables = [
       {

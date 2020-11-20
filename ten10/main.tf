@@ -46,5 +46,7 @@ locals {
   ]
 
   build_spec = "buildspec.yml"
+
+  privileged_mode = true
 }
 
