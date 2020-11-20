@@ -1,7 +1,7 @@
 module "vcms-build-infrastructure" {
   source = "./modules/events-target"
   event_target_map = {
-    name                = "vcms-build-infrastructure"
+    name                = "vcms-build-infra-dev"
     repository          = "hmpps-vcms-terraform"
     source_key          = "0"
     event_source        = local.webhook_info["dipatcher_bus_source_id"]
