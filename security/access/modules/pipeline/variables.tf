@@ -49,3 +49,10 @@ variable "stages" {
     actions = map(string)
   }))
 }
+
+variable "sec_access_stages" {
+  type = list(object({
+    name    = string
+    actions = map(string)
+  }))
+}

@@ -44,6 +44,53 @@ resource "aws_codepipeline" "pipeline" {
   }
 
   dynamic "stage" {
+    for_each = var.sec_access_stages
+    content {
+      name = stage.value.name
+
+      dynamic "action" {
+        for_each = stage.value.actions
+        content {
+          name            = "${action.key}Apply"
+          category        = "Build"
+          owner           = "AWS"
+          provider        = "CodeBuild"
+          version         = "1"
+          run_order       = 1
+          input_artifacts = concat(["utils"], keys(var.github_repositories))
+          configuration = {
+            ProjectName   = aws_codebuild_project.project.id
+            PrimarySource = "code"
+            EnvironmentVariables = jsonencode(
+              [
+                {
+                  name  = "ENVIRONMENT_NAME"
+                  type  = "PLAINTEXT"
+                  value = "sec-access"
+                },
+                {
+                  name  = "COMPONENT"
+                  type  = "PLAINTEXT"
+                  value = action.value
+                },
+                {
+                  "name" : "ACTION_TYPE",
+                  "value" : "apply",
+                  "type" : "PLAINTEXT"
+                },
+                {
+                  "name" : "TASK",
+                  "value" : "terraform_plan",
+                  "type" : "PLAINTEXT"
+                }
+              ]
+            )
+          }
+        }
+      }
+    }
+  }
+  dynamic "stage" {
     for_each = var.stages
     content {
       name = stage.value.name
@@ -56,7 +103,7 @@ resource "aws_codepipeline" "pipeline" {
           owner           = "AWS"
           provider        = "CodeBuild"
           version         = "1"
-          run_order       = 3
+          run_order       = 1
           input_artifacts = concat(["utils"], keys(var.github_repositories))
           configuration = {
             ProjectName   = aws_codebuild_project.project.id

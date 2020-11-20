@@ -1,8 +1,8 @@
-module "delius_core_terraform" {
+module "security-access-terraform" {
   source           = "./modules/pipeline"
-  environment_name = "delius-core-dev"
+  environment_name = "hmpps-sandpit"
   artefacts_bucket = local.artefacts_bucket
-  prefix           = local.prefix
+  prefix           = "${local.prefix}-terraform-components"
   iam_role_arn     = local.iam_role_arn
   project_name     = "terraform-builds"
   log_group        = local.log_group_name
@@ -12,9 +12,36 @@ module "delius_core_terraform" {
   }
   stages = [
     {
-      name = "Security"
+      name = "Roles"
       actions = {
-        UserRoles = "user-roles"
+        UserRoles   = "user-roles",
+        RemoteRoles = "remote-roles"
+      }
+    },
+    {
+      name = "ConfigService"
+      actions = {
+        ConfigService = "config-service",
+      }
+    },
+    {
+      name = "SecurityLogging"
+      actions = {
+        SecLogging = "sec-logging"
+      }
+    },
+    {
+      name = "GuardDuty"
+      actions = {
+        GuardDuty = "guardduty"
+      }
+    }
+  ]
+  sec_access_stages = [
+    {
+      name = "UsersAndGroups"
+      actions = {
+        UserGroups = "user-groups",
       }
     }
   ]
