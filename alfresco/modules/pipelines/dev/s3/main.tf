@@ -65,6 +65,11 @@ resource "aws_codepipeline" "pipeline" {
               "name" : "PACKAGE_NAME",
               "value" : "alfresco-terraform.tar",
               "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "RELEASE_PKGS_PATH",
+              "value" : "terraform_plan",
+              "type" : "PLAINTEXT"
             }
           ]
         )

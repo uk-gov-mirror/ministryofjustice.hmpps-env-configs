@@ -4,6 +4,7 @@ output "codebuild_info" {
     iam_role_arn                          = aws_iam_role.codebuild.arn
     artefacts_bucket                      = aws_s3_bucket.artefacts.bucket
     cache_bucket                          = aws_s3_bucket.cache.bucket
+    build_cache_bucket                    = aws_s3_bucket.temp.bucket
     pipeline_bucket                       = aws_s3_bucket.codepipeline.bucket
     iam_role_arn_packer_ami_builder       = aws_iam_role.codebuild_packer_ami_builder.arn
     iam_role_arn_docker_image_builder     = aws_iam_role.codebuild_docker_image_builder.arn

@@ -50,9 +50,6 @@ variable "stages" {
   }))
 }
 
-variable "sec_access_stages" {
-  type = list(object({
-    name    = string
-    actions = map(string)
-  }))
+variable "cache_bucket" {
+  type    = string
 }

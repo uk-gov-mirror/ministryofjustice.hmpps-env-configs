@@ -7,8 +7,9 @@ module "security-access-terraform" {
   project_name     = "terraform-builds"
   log_group        = local.log_group_name
   tags             = local.tags
+  cache_bucket     = local.cache_bucket
   github_repositories = {
-    code = ["hmpps-security-access-terraform", "develop"]
+    code = ["hmpps-security-access-terraform", "patch/tf-upgrade"]
   }
   stages = [
     {
@@ -34,14 +35,6 @@ module "security-access-terraform" {
       name = "GuardDuty"
       actions = {
         GuardDuty = "guardduty"
-      }
-    }
-  ]
-  sec_access_stages = [
-    {
-      name = "UsersAndGroups"
-      actions = {
-        UserGroups = "user-groups",
       }
     }
   ]
