@@ -56,8 +56,8 @@ locals {
       packer    = var.code_build["packer_image"]
     }
     type = "LINUX_CONTAINER"
-    image_pull_credentials_type = "CODEBUILD"
-    privileged_mode = true
+    image_pull_credentials_type = "SERVICE_ROLE"
+    privileged_mode             = local.build_environment_spec.privileged_mode
     environment_variables = {
       "ARTIFACT_BUCKET" = "tf-eu-west-2-hmpps-eng-dev-config-s3bucket"
       "ZAIZI_BUCKET"    = "tf-eu-west-2-hmpps-eng-dev-artefacts-s3bucket"

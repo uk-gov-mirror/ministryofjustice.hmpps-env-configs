@@ -21,7 +21,7 @@ resource "aws_codebuild_project" "hmpps_delius_iaps_packer_ami" {
     image                       = local.build_environment_spec.images["packer"]
     type                        = local.build_environment_spec.type
     image_pull_credentials_type = local.build_environment_spec.image_pull_credentials_type
-    privileged_mode             = true
+    privileged_mode             = local.build_environment_spec.privileged_mode
     
     dynamic "environment_variable" {
       for_each = local.build_environment_spec.environment_variables

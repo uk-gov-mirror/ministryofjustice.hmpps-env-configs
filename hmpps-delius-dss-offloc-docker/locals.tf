@@ -59,8 +59,8 @@ locals {
       amazonlinux2_v3_0    = "aws/codebuild/amazonlinux2-x86_64-standard:3.0"
     }
     type = "LINUX_CONTAINER"
-    image_pull_credentials_type = "CODEBUILD"
-    privileged_mode = true
+    image_pull_credentials_type = "SERVICE_ROLE"
+    privileged_mode             = local.build_environment_spec.privileged_mode
     
     environment_variables = [
       {

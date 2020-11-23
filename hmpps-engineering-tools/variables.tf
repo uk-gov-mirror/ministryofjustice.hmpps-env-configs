@@ -24,7 +24,7 @@ variable "code_build" {
     github_org          = "ministryofjustice"
     artifact_expiration = 90
     docker_image        = "mojdigitalstudio/hmpps-docker-compose"
-    packer_image        = "mojdigitalstudio/hmpps-packer-builder:0.2.3"
+    packer_image        = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/packer-builder:0.33.0"
   }
 }
 

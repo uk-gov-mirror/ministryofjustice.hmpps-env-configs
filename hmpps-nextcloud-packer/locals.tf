@@ -56,8 +56,8 @@ locals {
       packer    = data.terraform_remote_state.common.outputs.codebuild_info["packerbuilder_image"]
     }
     type = "LINUX_CONTAINER"
-    image_pull_credentials_type = "CODEBUILD"
-    privileged_mode = true
+    image_pull_credentials_type = "SERVICE_ROLE"
+    privileged_mode             = true
     environment_variables = {
       "ARTIFACT_BUCKET" = "tf-eu-west-2-hmpps-eng-dev-config-s3bucket"
       "ZAIZI_BUCKET"    = "tf-eu-west-2-hmpps-eng-dev-artefacts-s3bucket"

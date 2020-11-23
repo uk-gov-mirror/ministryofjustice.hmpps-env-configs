@@ -29,7 +29,7 @@ variable "code_build" {
     terraform_image     = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/terraform-builder-lite:latest"
     docker_image        = "mojdigitalstudio/hmpps-docker-compose"
     python_image        = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/ansible-builder-python-3:latest"
-    packer_image        = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/packer-builder:0.2.3"
+    packer_image        = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/packer-builder:0.33.0"
     ansible2_image      = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/ansible-builder:latest"
   }
 }
