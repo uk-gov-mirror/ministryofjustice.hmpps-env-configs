@@ -4,7 +4,7 @@ module "security-access-terraform" {
   artefacts_bucket = local.artefacts_bucket
   prefix           = "${local.prefix}-terraform-components"
   iam_role_arn     = local.iam_role_arn
-  project_name     = "terraform-builds"
+  project_name     = local.projects["terraform_utils"]
   log_group        = local.log_group_name
   tags             = local.tags
   cache_bucket     = local.cache_bucket
@@ -20,21 +20,16 @@ module "security-access-terraform" {
       }
     },
     {
-      name = "ConfigService"
-      actions = {
-        ConfigService = "config-service",
-      }
-    },
-    {
       name = "SecurityLogging"
       actions = {
         SecLogging = "sec-logging"
       }
     },
     {
-      name = "GuardDuty"
+      name = "Services"
       actions = {
         GuardDuty = "guardduty"
+        ConfigService = "config-service"
       }
     }
   ]

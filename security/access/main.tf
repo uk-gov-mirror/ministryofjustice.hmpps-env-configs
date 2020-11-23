@@ -10,4 +10,5 @@ locals {
   log_group_name   = data.terraform_remote_state.common.outputs.codebuild_info["log_group"]
   tags             = data.terraform_remote_state.common.outputs.tags
   prefix           = "security-access"
+  projects         = data.terraform_remote_state.common.outputs.codebuild_projects
 }

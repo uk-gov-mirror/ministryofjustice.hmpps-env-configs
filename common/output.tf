@@ -39,3 +39,12 @@ output "dockerimagebuilder_info" {
 output "tags" {
   value = local.tags
 }
+
+output "codebuild_projects" {
+  value = {
+    terraform_utils = aws_codebuild_project.terraform_utils.id
+    python3         = aws_codebuild_project.python3.id
+    ansible3        = aws_codebuild_project.ansible3.id
+    ansible2        = aws_codebuild_project.ansible2.id
+  }
+}

@@ -177,3 +177,39 @@ resource "aws_codebuild_project" "python3" {
   }
 }
 
+# main terraform project
+resource "aws_codebuild_project" "terraform_utils" {
+  name           = "${local.common_name}-terraform-utils"
+  build_timeout  = "30"
+  queued_timeout = "30"
+  service_role   = aws_iam_role.codebuild.arn
+  tags = var.tags
+
+  logs_config {
+    cloudwatch_logs {
+      group_name  = module.create_loggroup.loggroup_name
+      stream_name = "${local.common_name}-terraform-utils"
+    }
+  }
+
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+
+  source {
+    type      = "CODEPIPELINE"
+    buildspec = templatefile("./templates/terraform/buildspec.yml.tpl", {})
+  }
+
+  environment {
+    compute_type                = "BUILD_GENERAL1_SMALL"
+    image                       = var.code_build["terraform_image"]
+    type                        = "LINUX_CONTAINER"
+    image_pull_credentials_type = "SERVICE_ROLE"
+
+    environment_variable {
+      name  = "RUNNING_IN_CONTAINER"
+      value = "True"
+    }
+  }
+}

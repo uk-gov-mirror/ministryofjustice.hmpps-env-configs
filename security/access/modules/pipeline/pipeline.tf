@@ -59,7 +59,7 @@ resource "aws_codepipeline" "pipeline" {
           run_order       = 1
           input_artifacts = concat(["utils"], keys(var.github_repositories))
           configuration = {
-            ProjectName   = aws_codebuild_project.project.id
+            ProjectName   = var.project_name
             PrimarySource = "code"
             EnvironmentVariables = jsonencode(
               [
@@ -75,7 +75,7 @@ resource "aws_codepipeline" "pipeline" {
                 },
                 {
                   "name" : "TASK",
-                  "value" : "terraform_plan",
+                  "value" : "apply",
                   "type" : "PLAINTEXT"
                 },
                 {
