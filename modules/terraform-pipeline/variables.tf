@@ -50,6 +50,18 @@ variable "stages" {
   }))
 }
 
+variable "pipeline_approval_config" {
+  type = map(string)
+  default = {
+    CustomData = "Please review plans and approve to proceed?"
+  }
+}
+
 variable "cache_bucket" {
   type    = string
+}
+
+variable "approval_required" {
+  description = "Whether the Terraform planned changes must be approved before applying."
+  default     = true
 }

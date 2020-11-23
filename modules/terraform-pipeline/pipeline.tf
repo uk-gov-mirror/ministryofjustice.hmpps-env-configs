@@ -49,7 +49,7 @@ resource "aws_codepipeline" "pipeline" {
       name = stage.value.name
 
       dynamic "action" {
-        for_each = stage.value.actions
+        for_each = var.approval_required ? stage.value.actions : {}
         content {
           name            = "${action.key}Plan"
           category        = "Build"
@@ -75,7 +75,62 @@ resource "aws_codepipeline" "pipeline" {
                 },
                 {
                   "name" : "TASK",
-                  "value" : "apply",
+                  "value" : "terraform_plan",
+                  "type" : "PLAINTEXT"
+                },
+                {
+                  "name" : "BUILDS_CACHE_BUCKET",
+                  "value" : var.cache_bucket,
+                  "type" : "PLAINTEXT"
+                }
+              ]
+            )
+          }
+        }
+      }
+      # Approve
+      dynamic "action" {
+        for_each = var.approval_required ? ["1"] : []
+        content {
+          name      = "ApproveChanges"
+          category  = "Approval"
+          owner     = "AWS"
+          provider  = "Manual"
+          version   = "1"
+          run_order = 2
+          configuration = var.pipeline_approval_config
+        }
+      }
+
+      # Apply
+      dynamic "action" {
+        for_each = stage.value.actions
+        content {
+          name            = "${action.key}Apply"
+          category        = "Build"
+          owner           = "AWS"
+          provider        = "CodeBuild"
+          version         = "1"
+          run_order       = 3
+          input_artifacts = concat(["utils"], keys(var.github_repositories))
+          configuration = {
+            ProjectName   = var.project_name
+            PrimarySource = "code"
+            EnvironmentVariables = jsonencode(
+              [
+                {
+                  name  = "ENVIRONMENT_NAME"
+                  type  = "PLAINTEXT"
+                  value = var.environment_name
+                },
+                {
+                  name  = "COMPONENT"
+                  type  = "PLAINTEXT"
+                  value = action.value
+                },
+                {
+                  "name" : "TASK",
+                  "value" : var.approval_required ? "terraform_apply" : "apply",
                   "type" : "PLAINTEXT"
                 },
                 {
