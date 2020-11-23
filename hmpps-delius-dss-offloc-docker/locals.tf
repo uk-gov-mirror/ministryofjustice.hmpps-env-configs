@@ -60,7 +60,7 @@ locals {
     }
     type = "LINUX_CONTAINER"
     image_pull_credentials_type = "SERVICE_ROLE"
-   privileged_mode             = local.build_environment_spec.privileged_mode
+    privileged_mode             = local.build_environment_spec.privileged_mode
     
     environment_variables = [
       {
