@@ -4,6 +4,7 @@ output "codebuild_info" {
     iam_role_arn                          = aws_iam_role.codebuild.arn
     artefacts_bucket                      = aws_s3_bucket.artefacts.bucket
     cache_bucket                          = aws_s3_bucket.cache.bucket
+    build_cache_bucket                    = aws_s3_bucket.temp.bucket
     pipeline_bucket                       = aws_s3_bucket.codepipeline.bucket
     iam_role_arn_packer_ami_builder       = aws_iam_role.codebuild_packer_ami_builder.arn
     iam_role_arn_docker_image_builder     = aws_iam_role.codebuild_docker_image_builder.arn
@@ -37,4 +38,13 @@ output "dockerimagebuilder_info" {
 
 output "tags" {
   value = local.tags
+}
+
+output "codebuild_projects" {
+  value = {
+    terraform_utils = aws_codebuild_project.terraform_utils.id
+    python3         = aws_codebuild_project.python3.id
+    ansible3        = aws_codebuild_project.ansible3.id
+    ansible2        = aws_codebuild_project.ansible2.id
+  }
 }
