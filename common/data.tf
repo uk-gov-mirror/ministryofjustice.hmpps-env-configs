@@ -11,6 +11,7 @@ data "template_file" "codebuild_iam_policy" {
     s3_bucket_arn        = aws_s3_bucket.codepipeline.arn
     artefacts_bucket_arn = aws_s3_bucket.artefacts.arn
     cache_bucket_arn     = aws_s3_bucket.cache.arn
+    build_cache_bucket_arn = aws_s3_bucket.temp.arn
   }
 }
 # codebuild packer builder assume

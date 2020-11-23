@@ -1,7 +1,7 @@
-module "security-access-delius-core-dev" {
+module "security-access-terraform-components" {
   source = "./modules/events-target"
   event_target_map = {
-    name                = "security-access-delius-core-dev"
+    name                = "security-access-terraform-components"
     repository          = "hmpps-security-access-terraform"
     source_key          = "0"
     event_source        = local.webhook_info["dipatcher_bus_source_id"]

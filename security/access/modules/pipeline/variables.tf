@@ -49,3 +49,7 @@ variable "stages" {
     actions = map(string)
   }))
 }
+
+variable "cache_bucket" {
+  type    = string
+}
