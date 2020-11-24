@@ -43,6 +43,42 @@ resource "aws_codepipeline" "pipeline" {
     }
   }
 
+  stage {
+    name = "CreatePackage"
+    action {
+      name            = "BuildTfPAckage"
+      input_artifacts = concat(["utils"], keys(var.github_repositories))
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 1
+      configuration = {
+        ProjectName   = var.project_name
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "TASK",
+              "value" : "build_tfpackage",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : var.cache_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+  }
+  
   dynamic "stage" {
     for_each = var.stages
     content {
