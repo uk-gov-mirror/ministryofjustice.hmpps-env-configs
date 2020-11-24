@@ -87,21 +87,6 @@ then
     rm -rf ${temp_creds_file}
 fi
 
-if [ ${ACTION_TYPE} == "docker-ansible" ]
-then
-    export AWS_DEFAULT_REGION=${TF_VAR_region}
-    temp_creds_file="${HOME}/temp_creds"
-    temp_role=$(aws sts assume-role --role-arn ${TERRAGRUNT_IAM_ROLE} --role-session-name infra --duration-seconds 900) > ${temp_creds_file}
-    exit_on_error $? !!
-    echo "unset AWS_PROFILE
-    export AWS_ACCESS_KEY=$(echo ${temp_role} | jq .Credentials.AccessKeyId | xargs)
-    export AWS_SECRET_KEY=$(echo ${temp_role} | jq .Credentials.SecretAccessKey | xargs)
-    export AWS_SECURITY_TOKEN=$(echo ${temp_role} | jq .Credentials.SessionToken | xargs)" > ${temp_creds_file}
-    source ${temp_creds_file}
-    exit_on_error $? !!
-    rm -rf ${temp_creds_file}
-fi
-
 case ${ACTION_TYPE} in
   docker-ansible)
     echo "Running ansible playbook action"
