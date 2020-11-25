@@ -11,7 +11,7 @@ phases:
       - git config --global advice.detachedHead false
   build:
     commands:
-      - python utils/manage.py create-release -b main -sha $CODEBUILD_RESOLVED_SOURCE_VERSION
+      - python utils/manage.py create-release -b master -sha $CODEBUILD_RESOLVED_SOURCE_VERSION
       - sleep 15
       - rm -rf builds
       - echo "REPO set to $GITHUB_REPO"

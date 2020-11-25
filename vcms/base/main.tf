@@ -24,10 +24,13 @@ locals {
   project_names = {
     buildinfra     = "vcms-build-infra"
     application    = "vcms-application"
+    restoredb      = "vcms-restore-db"
   }
   project_list = [
     local.project_names["buildinfra"],
     local.project_names["application"],
+    local.project_names["restoredb"],
+
   ]
 
   build_spec = "buildspec.yml"

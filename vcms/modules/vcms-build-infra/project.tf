@@ -7,7 +7,7 @@ resource "aws_codebuild_webhook" "release" {
     }
     filter {
       type    = "HEAD_REF"
-      pattern = "refs/heads/als-1941V2"
+      pattern = "refs/heads/master"
     }
   }
 }

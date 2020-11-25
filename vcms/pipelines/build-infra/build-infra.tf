@@ -231,3 +231,17 @@ module "prod-environments" {
     }
   ]
 }
+
+#DB Restore pipeline
+module "db-restore" {
+  source           = "../../modules/restore-db"
+  artefacts_bucket = local.artefacts_bucket
+  pipeline_bucket  = local.pipeline_bucket
+  prefix           = "${local.prefix}-restore-db"
+  iam_role_arn     = local.iam_role_arn
+  tags             = var.tags
+  projects         = local.projects
+  repo_name        = "hmpps-vcms-infra-versions"
+  repo_branch      = "main"
+  environments     = ["dev", "test", "perf", "stage", "preprod", "prod"]
+}

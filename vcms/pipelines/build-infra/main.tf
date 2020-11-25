@@ -5,5 +5,6 @@ locals {
   prefix           = "vcms"
   projects = {
     buildinfra = data.terraform_remote_state.base.outputs.projects["buildinfra"]
+    restoredb  = data.terraform_remote_state.base.outputs.projects["restoredb"]
   }
 }
