@@ -14,25 +14,21 @@
 module "alfresco-dev" {
   source            = "../../../modules/terraform-pipeline"
   environment_name  = "alfresco-dev"
-  approval_required = true
+  approval_required = false
   artefacts_bucket  = local.artefacts_bucket
   prefix            = "${local.prefix}-alfresco-dev"
   iam_role_arn      = local.iam_role_arn
-  project_name      = local.codebuild_projects["terraform_utils"]
+  package_project_name  = local.codebuild_projects["terraform_package"]
+  tf_apply_project_name = local.codebuild_projects["terraform_apply"]
+  tf_plan_project_name  = local.codebuild_projects["terraform_plan"]
   log_group         = local.log_group_name
   tags              = local.tags
   cache_bucket      = local.cache_bucket
   github_repositories = {
     code = ["hmpps-delius-alfresco-shared-terraform", "develop"]
+    utils = ["hmpps-engineering-pipelines-utils", "develop"]
   }
-  stages = [
-    {
-      name = "Common"
-      actions = {
-        Common   = "common",
-      }
-    }
-  ]
+  stages = local.infra_stages
 }
 
 module "integration-envs" {

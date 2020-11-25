@@ -24,4 +24,58 @@ locals {
   codebuild_projects = data.terraform_remote_state.common.outputs.codebuild_projects
   tags               = data.terraform_remote_state.common.outputs.tags
   log_group_name     = data.terraform_remote_state.common.outputs.codebuild_info["log_group"]
+  infra_stages = [
+    {
+      name = "Common"
+      actions = {
+        Common   = ["common"],
+        SolrSnapShotID   = ["ansible/ebs/param_store", "ansible", "hmpps-eng-builds-terraform-ansible"]
+      }
+    },
+    {
+      name = "Prereqs"
+      actions = {
+        AmiPermissions = ["ami_permissions"],
+        S3buckets      = ["s3buckets"],
+        IAM            = ["iam"],
+        SecurityGroups = ["security-groups"],
+      }
+    },
+    {
+      name = "Storage"
+      actions = {
+        EFS = ["efs"],
+        Memchached = ["elasticache-memcached"],
+      }
+    },
+    {
+      name = "Databases"
+      actions = {
+        RDSDatabase = ["database"],
+        ElkService = ["elk-service"],
+      }
+    },
+    {
+      name = "Solr"
+      actions = {
+        SolrIndex = ["solr"],
+      }
+    },
+    {
+      name = "Alfresco"
+      actions = {
+        AlfrescoNodes = ["asg"],
+      }
+    },
+    {
+      name = "Support"
+      actions = {
+        EsAdmin = ["es_admin"],
+        WAF = ["waf"],
+        CloudwatchExporter = ["cloudwatch_exporter"],
+        RestoreAlfrescoDocs = ["lambda/restoreDocs"],
+        MonitoringAndAlerts = ["monitoring"],
+      }
+    }
+  ] 
 }

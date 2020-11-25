@@ -27,37 +27,29 @@ resource "aws_codepipeline" "pipeline" {
         }
       }
     }
-    action {
-      name             = "utils"
-      category         = "Source"
-      owner            = "ThirdParty"
-      provider         = "GitHub"
-      version          = "1"
-      output_artifacts = ["utils"]
-      configuration = {
-        Owner                = var.repo_owner
-        Repo                 = "hmpps-engineering-pipelines-utils"
-        Branch               = "develop"
-        PollForSourceChanges = false
-      }
-    }
   }
 
   stage {
     name = "CreatePackage"
     action {
-      name            = "BuildTfPAckage"
-      input_artifacts = concat(["utils"], keys(var.github_repositories))
+      name            = "createPackage"
+      input_artifacts = concat(keys(var.github_repositories))
+      output_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
       run_order       = 1
       configuration = {
-        ProjectName   = var.project_name
+        ProjectName   = var.package_project_name
         PrimarySource = "code"
         EnvironmentVariables = jsonencode(
           [
+            {
+              name  = "ENVIRONMENT_NAME"
+              type  = "PLAINTEXT"
+              value = var.environment_name
+            },
             {
               "name" : "TASK",
               "value" : "build_tfpackage",
@@ -93,10 +85,10 @@ resource "aws_codepipeline" "pipeline" {
           provider        = "CodeBuild"
           version         = "1"
           run_order       = 1
-          input_artifacts = concat(["utils"], keys(var.github_repositories))
+          input_artifacts = ["package"]
           configuration = {
-            ProjectName   = var.project_name
-            PrimarySource = "code"
+            ProjectName   = length(action.value) > 2 ? action.value[2] : var.tf_plan_project_name
+            PrimarySource = "package"
             EnvironmentVariables = jsonencode(
               [
                 {
@@ -107,16 +99,21 @@ resource "aws_codepipeline" "pipeline" {
                 {
                   name  = "COMPONENT"
                   type  = "PLAINTEXT"
-                  value = action.value
+                  value = action.value[0]
                 },
                 {
                   "name" : "TASK",
-                  "value" : "terraform_plan",
+                  "value" : length(action.value) > 2 ? "${action.value[1]}" :"terraform_plan",
                   "type" : "PLAINTEXT"
                 },
                 {
                   "name" : "BUILDS_CACHE_BUCKET",
                   "value" : var.cache_bucket,
+                  "type" : "PLAINTEXT"
+                },
+                {
+                  "name" : "ARTEFACTS_BUCKET",
+                  "value" : var.artefacts_bucket,
                   "type" : "PLAINTEXT"
                 }
               ]
@@ -138,7 +135,7 @@ resource "aws_codepipeline" "pipeline" {
         }
       }
 
-      # Apply
+      #Apply
       dynamic "action" {
         for_each = stage.value.actions
         content {
@@ -148,10 +145,10 @@ resource "aws_codepipeline" "pipeline" {
           provider        = "CodeBuild"
           version         = "1"
           run_order       = 3
-          input_artifacts = concat(["utils"], keys(var.github_repositories))
+          input_artifacts = ["package"]
           configuration = {
-            ProjectName   = var.project_name
-            PrimarySource = "code"
+            ProjectName   = length(action.value) > 2 ? action.value[2] : var.tf_apply_project_name
+            PrimarySource = "package"
             EnvironmentVariables = jsonencode(
               [
                 {
@@ -162,16 +159,21 @@ resource "aws_codepipeline" "pipeline" {
                 {
                   name  = "COMPONENT"
                   type  = "PLAINTEXT"
-                  value = action.value
+                  value = action.value[0]
                 },
                 {
                   "name" : "TASK",
-                  "value" : var.approval_required ? "terraform_apply" : "apply",
+                  "value" : length(action.value) > 2 ? "${action.value[1]}" : local.apply_task,
                   "type" : "PLAINTEXT"
                 },
                 {
                   "name" : "BUILDS_CACHE_BUCKET",
                   "value" : var.cache_bucket,
+                  "type" : "PLAINTEXT"
+                },
+                {
+                  "name" : "ARTEFACTS_BUCKET",
+                  "value" : var.artefacts_bucket,
                   "type" : "PLAINTEXT"
                 }
               ]

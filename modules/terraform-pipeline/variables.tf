@@ -25,8 +25,16 @@ variable "tags" {
   type = map(string)
 }
 
-variable "project_name" {
-  type = string
+variable "package_project_name" {
+  default     = "hmpps-eng-builds-terraform-package"
+}
+
+variable "tf_plan_project_name" {
+  default     = "hmpps-eng-builds-terraform-plan"
+}
+
+variable "tf_apply_project_name" {
+  default     = "hmpps-eng-builds-terraform-apply"
 }
 
 variable "prefix" {
@@ -46,7 +54,7 @@ variable "docker_image" {
 variable "stages" {
   type = list(object({
     name    = string
-    actions = map(string)
+    actions = map(list(string))
   }))
 }
 
@@ -65,7 +73,3 @@ variable "approval_required" {
   description = "Whether the Terraform planned changes must be approved before applying."
   default     = true
 }
-
-# variable "create_packages" {
-#   default     = false
-# }
