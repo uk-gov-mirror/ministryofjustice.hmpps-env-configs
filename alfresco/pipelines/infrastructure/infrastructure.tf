@@ -1,16 +1,3 @@
-# module "alfresco-dev" {
-#   source           = "../../modules/pipelines/dev/git"
-#   artefacts_bucket = local.artefacts_bucket
-#   pipeline_bucket  = local.pipeline_bucket
-#   prefix           = local.prefix
-#   iam_role_arn     = local.iam_role_arn
-#   repo_name        = "hmpps-delius-alfresco-shared-terraform"
-#   repo_branch      = "develop"
-#   environments     = ["alfresco-dev"]
-#   tags             = local.tags
-#   projects         = local.projects
-# }
-
 module "alfresco-dev" {
   source            = "../../../modules/terraform-pipeline"
   environment_name  = "alfresco-dev"
