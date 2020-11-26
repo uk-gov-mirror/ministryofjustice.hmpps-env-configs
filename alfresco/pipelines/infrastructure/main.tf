@@ -24,6 +24,14 @@ locals {
   codebuild_projects = data.terraform_remote_state.common.outputs.codebuild_projects
   tags               = data.terraform_remote_state.common.outputs.tags
   log_group_name     = data.terraform_remote_state.common.outputs.codebuild_info["log_group"]
+  pre_stages = [
+    {
+      name = "BuildPackages"
+      actions = {
+        TerraformPackage   = ["build_tfpackage"]
+      }
+    }
+  ]
   infra_stages = [
     {
       name = "Common"

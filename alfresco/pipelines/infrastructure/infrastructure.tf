@@ -29,6 +29,7 @@ module "alfresco-dev" {
     utils = ["hmpps-engineering-pipelines-utils", "develop"]
   }
   stages = local.infra_stages
+  pre_stages = local.pre_stages
 }
 
 module "integration-envs" {

@@ -42,6 +42,11 @@ variable "prefix" {
   default = "security-access"
 }
 
+variable "input_artifact" {
+  type    = string
+  default = "package"
+}
+
 variable "log_group" {
   type = string
 }
@@ -72,4 +77,12 @@ variable "cache_bucket" {
 variable "approval_required" {
   description = "Whether the Terraform planned changes must be approved before applying."
   default     = true
+}
+
+variable "pre_stages" {
+  type = list(object({
+    name    = string
+    actions = map(list(string))
+  }))
+  default = []
 }
