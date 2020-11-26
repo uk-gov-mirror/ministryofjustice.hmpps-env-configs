@@ -43,8 +43,8 @@ variable "prefix" {
 }
 
 variable "input_artifact" {
-  type    = string
-  default = "package"
+  type    = list(string)
+  default = ["package"]
 }
 
 variable "log_group" {
