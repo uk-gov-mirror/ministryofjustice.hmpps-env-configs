@@ -8,11 +8,11 @@ env:
 phases:
   pre_build:
     commands:
-      - export HMPPS_BUILD_WORK_DIR=${CODEBUILD_SRC_DIR}
+      - export HMPPS_BUILD_WORK_DIR=$${CODEBUILD_SRC_DIR}
       - tar xf tfpackage.tar -C $${CODEBUILD_SRC_DIR} --strip-components=2 || exit $?
   build:
     commands:
       - |
         if [ $${TASK} == "ansible" ]; then
-          sh run.sh ${ENVIRONMENT_NAME} $${TASK} $${COMPONENT} || (exit $$?)
+          sh run.sh $${ENVIRONMENT_NAME} $${TASK} $${COMPONENT} || (exit $$?)
         fi
