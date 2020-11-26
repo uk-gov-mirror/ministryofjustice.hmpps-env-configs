@@ -179,7 +179,8 @@ resource "aws_codebuild_project" "python3" {
 
 # main terraform project
 resource "aws_codebuild_project" "terraform_utils" {
-  name           = "${local.common_name}-terraform-utils"
+  for_each = toset(["package", "plan", "apply"])
+  name           = "${local.common_name}-terraform-${each.key}"
   build_timeout  = "30"
   queued_timeout = "30"
   service_role   = aws_iam_role.codebuild.arn
@@ -188,7 +189,49 @@ resource "aws_codebuild_project" "terraform_utils" {
   logs_config {
     cloudwatch_logs {
       group_name  = module.create_loggroup.loggroup_name
-      stream_name = "${local.common_name}-terraform-utils"
+      stream_name = "${local.common_name}-terraform-${each.key}"
+    }
+  }
+
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+
+  cache {
+    type     = "S3"
+    location = aws_s3_bucket.temp.bucket
+  }
+
+  source {
+    type      = "CODEPIPELINE"
+    buildspec = templatefile("./templates/terraform/${each.key}.yml.tpl", {})
+  }
+
+  environment {
+    compute_type                = "BUILD_GENERAL1_SMALL"
+    image                       = var.code_build["terraform_image"]
+    type                        = "LINUX_CONTAINER"
+    image_pull_credentials_type = "SERVICE_ROLE"
+
+    environment_variable {
+      name  = "RUNNING_IN_CONTAINER"
+      value = "True"
+    }
+  }
+}
+
+resource "aws_codebuild_project" "ansible_utils" {
+  name           = "${local.common_name}-terraform-ansible"
+  description    = "${local.common_name}-terraform-ansible"
+  build_timeout  = "30"
+  queued_timeout = "30"
+  service_role   = aws_iam_role.codebuild.arn
+  tags = local.tags
+
+  logs_config {
+    cloudwatch_logs {
+      group_name  = module.create_loggroup.loggroup_name
+      stream_name = "${local.common_name}-terraform-ansible"
     }
   }
 
@@ -198,13 +241,13 @@ resource "aws_codebuild_project" "terraform_utils" {
 
   source {
     type      = "CODEPIPELINE"
-    buildspec = templatefile("./templates/terraform/buildspec.yml.tpl", {})
+    buildspec = templatefile("./templates/terraform/ansible.yml.tpl", {})
   }
 
   environment {
-    compute_type                = "BUILD_GENERAL1_SMALL"
-    image                       = var.code_build["terraform_image"]
-    type                        = "LINUX_CONTAINER"
+    compute_type                = local.compute_type
+    image                       = local.images["ansible3"]
+    type                        = local.type
     image_pull_credentials_type = "SERVICE_ROLE"
 
     environment_variable {

@@ -27,22 +27,56 @@ resource "aws_codepipeline" "pipeline" {
         }
       }
     }
-    action {
-      name             = "utils"
-      category         = "Source"
-      owner            = "ThirdParty"
-      provider         = "GitHub"
-      version          = "1"
-      output_artifacts = ["utils"]
-      configuration = {
-        Owner                = var.repo_owner
-        Repo                 = "hmpps-engineering-pipelines-utils"
-        Branch               = "develop"
-        PollForSourceChanges = false
+  }
+
+  dynamic "stage" {
+    for_each = var.pre_stages
+    content {
+      name = stage.value.name
+      dynamic "action" {
+        for_each = stage.value.actions
+        content {
+          name            = action.key
+          input_artifacts = concat(keys(var.github_repositories))
+          output_artifacts = [var.input_artifact]
+          category        = "Build"
+          owner           = "AWS"
+          provider        = "CodeBuild"
+          version         = "1"
+          run_order       = 1
+          configuration = {
+            ProjectName   = var.package_project_name
+            PrimarySource = "code"
+            EnvironmentVariables = jsonencode(
+              [
+                {
+                  name  = "ENVIRONMENT_NAME"
+                  type  = "PLAINTEXT"
+                  value = var.environment_name
+                },
+                {
+                  "name" : "TASK",
+                  "value" : action.value[0],
+                  "type" : "PLAINTEXT"
+                },
+                {
+                  "name" : "BUILDS_CACHE_BUCKET",
+                  "value" : var.cache_bucket,
+                  "type" : "PLAINTEXT"
+                },
+                {
+                  "name" : "ARTEFACTS_BUCKET",
+                  "value" : var.artefacts_bucket,
+                  "type" : "PLAINTEXT"
+                }
+              ]
+            )
+          }
+        }
       }
     }
   }
-
+  
   dynamic "stage" {
     for_each = var.stages
     content {
@@ -57,10 +91,10 @@ resource "aws_codepipeline" "pipeline" {
           provider        = "CodeBuild"
           version         = "1"
           run_order       = 1
-          input_artifacts = concat(["utils"], keys(var.github_repositories))
+          input_artifacts = [var.input_artifact]
           configuration = {
-            ProjectName   = var.project_name
-            PrimarySource = "code"
+            ProjectName   = length(action.value) > 2 ? action.value[2] : var.tf_plan_project_name
+            PrimarySource = "package"
             EnvironmentVariables = jsonencode(
               [
                 {
@@ -71,16 +105,21 @@ resource "aws_codepipeline" "pipeline" {
                 {
                   name  = "COMPONENT"
                   type  = "PLAINTEXT"
-                  value = action.value
+                  value = action.value[0]
                 },
                 {
                   "name" : "TASK",
-                  "value" : "terraform_plan",
+                  "value" : length(action.value) > 2 ? "${action.value[1]}" :"terraform_plan",
                   "type" : "PLAINTEXT"
                 },
                 {
                   "name" : "BUILDS_CACHE_BUCKET",
                   "value" : var.cache_bucket,
+                  "type" : "PLAINTEXT"
+                },
+                {
+                  "name" : "ARTEFACTS_BUCKET",
+                  "value" : var.artefacts_bucket,
                   "type" : "PLAINTEXT"
                 }
               ]
@@ -102,7 +141,7 @@ resource "aws_codepipeline" "pipeline" {
         }
       }
 
-      # Apply
+      #Apply
       dynamic "action" {
         for_each = stage.value.actions
         content {
@@ -112,10 +151,10 @@ resource "aws_codepipeline" "pipeline" {
           provider        = "CodeBuild"
           version         = "1"
           run_order       = 3
-          input_artifacts = concat(["utils"], keys(var.github_repositories))
+          input_artifacts = [var.input_artifact]
           configuration = {
-            ProjectName   = var.project_name
-            PrimarySource = "code"
+            ProjectName   = length(action.value) > 2 ? action.value[2] : var.tf_apply_project_name
+            PrimarySource = "package"
             EnvironmentVariables = jsonencode(
               [
                 {
@@ -126,16 +165,21 @@ resource "aws_codepipeline" "pipeline" {
                 {
                   name  = "COMPONENT"
                   type  = "PLAINTEXT"
-                  value = action.value
+                  value = action.value[0]
                 },
                 {
                   "name" : "TASK",
-                  "value" : var.approval_required ? "terraform_apply" : "apply",
+                  "value" : length(action.value) > 2 ? "${action.value[1]}" : local.apply_task,
                   "type" : "PLAINTEXT"
                 },
                 {
                   "name" : "BUILDS_CACHE_BUCKET",
                   "value" : var.cache_bucket,
+                  "type" : "PLAINTEXT"
+                },
+                {
+                  "name" : "ARTEFACTS_BUCKET",
+                  "value" : var.artefacts_bucket,
                   "type" : "PLAINTEXT"
                 }
               ]

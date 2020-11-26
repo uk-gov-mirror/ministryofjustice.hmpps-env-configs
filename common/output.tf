@@ -42,9 +42,12 @@ output "tags" {
 
 output "codebuild_projects" {
   value = {
-    terraform_utils = aws_codebuild_project.terraform_utils.id
-    python3         = aws_codebuild_project.python3.id
-    ansible3        = aws_codebuild_project.ansible3.id
-    ansible2        = aws_codebuild_project.ansible2.id
+    terraform_plan   = "${local.common_name}-terraform-plan"
+    terraform_apply   = "${local.common_name}-terraform-apply"
+    terraform_package = "${local.common_name}-terraform-package"
+    python3           = aws_codebuild_project.python3.id
+    ansible3          = aws_codebuild_project.ansible3.id
+    ansible2          = aws_codebuild_project.ansible2.id
+    ansible           = "${local.common_name}-terraform-ansible"
   }
 }

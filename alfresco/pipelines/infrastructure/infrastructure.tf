@@ -1,14 +1,22 @@
 module "alfresco-dev" {
-  source           = "../../modules/pipelines/dev/git"
-  artefacts_bucket = local.artefacts_bucket
-  pipeline_bucket  = local.pipeline_bucket
-  prefix           = local.prefix
-  iam_role_arn     = local.iam_role_arn
-  repo_name        = "hmpps-delius-alfresco-shared-terraform"
-  repo_branch      = "develop"
-  environments     = ["alfresco-dev"]
-  tags             = local.tags
-  projects         = local.projects
+  source            = "../../../modules/terraform-pipeline"
+  environment_name  = "alfresco-dev"
+  approval_required = false
+  artefacts_bucket  = local.artefacts_bucket
+  prefix            = "${local.prefix}-alfresco-dev"
+  iam_role_arn      = local.iam_role_arn
+  package_project_name  = local.codebuild_projects["terraform_package"]
+  tf_apply_project_name = local.codebuild_projects["terraform_apply"]
+  tf_plan_project_name  = local.codebuild_projects["terraform_plan"]
+  log_group         = local.log_group_name
+  tags              = local.tags
+  cache_bucket      = local.cache_bucket
+  github_repositories = {
+    code = ["hmpps-delius-alfresco-shared-terraform", "develop"]
+    utils = ["hmpps-engineering-pipelines-utils", "develop"]
+  }
+  stages = local.infra_stages
+  pre_stages = local.pre_stages
 }
 
 module "integration-envs" {
