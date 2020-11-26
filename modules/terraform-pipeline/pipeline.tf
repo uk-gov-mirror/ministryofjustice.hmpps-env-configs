@@ -38,7 +38,7 @@ resource "aws_codepipeline" "pipeline" {
         content {
           name            = action.key
           input_artifacts = concat(keys(var.github_repositories))
-          output_artifacts = [var.input_artifact]
+          output_artifacts = var.input_artifact
           category        = "Build"
           owner           = "AWS"
           provider        = "CodeBuild"
@@ -91,7 +91,7 @@ resource "aws_codepipeline" "pipeline" {
           provider        = "CodeBuild"
           version         = "1"
           run_order       = 1
-          input_artifacts = [var.input_artifact]
+          input_artifacts = var.input_artifact
           configuration = {
             ProjectName   = length(action.value) > 2 ? action.value[2] : var.tf_plan_project_name
             PrimarySource = "package"
@@ -151,7 +151,7 @@ resource "aws_codepipeline" "pipeline" {
           provider        = "CodeBuild"
           version         = "1"
           run_order       = 3
-          input_artifacts = [var.input_artifact]
+          input_artifacts = var.input_artifact
           configuration = {
             ProjectName   = length(action.value) > 2 ? action.value[2] : var.tf_apply_project_name
             PrimarySource = "package"
