@@ -45,6 +45,7 @@ output "codebuild_projects" {
     terraform_plan    = module.terraform_plan.project_name
     terraform_apply   = module.terraform_apply.project_name
     terraform_package = module.terraform_package.project_name
+    terraform_package_ssm = module.terraform_package_ssm.project_name
     ansible           = module.ansible_utils.project_name
     python3           = aws_codebuild_project.python3.id
     ansible3          = aws_codebuild_project.ansible3.id
