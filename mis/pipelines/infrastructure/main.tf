@@ -17,6 +17,36 @@ locals {
   ]
   infra_stages = [
     {
+      name = "Common"
+      actions = {
+        Common   = ["common"],
+      }
+    },
+    {
+      name = "S3buckets"
+      actions = {
+        S3buckets   = ["s3buckets"],
+      }
+    },
+    {
+      name = "Security"
+      actions = {
+        IAM            = ["iam"],
+        SecurityGroups = ["security-groups"],
+      }
+    },
+    {
+      name = "ApplicationServers"
+      actions = {
+        ec2-ndl-dis   = ["ec2-ndl-dis"],
+        ec2-ndl-bcs   = ["ec2-ndl-bcs"],
+        ec2-ndl-bfs   = ["ec2-ndl-bfs"],
+        ec2-ndl-bps   = ["ec2-ndl-bps"],
+        ec2-ndl-bws   = ["ec2-ndl-bws"],
+        Nextcloud     = ["nextcloud"],
+      }
+    },
+    {
       name = "Monitoring"
       actions = {
         Monitoring   = ["monitoring"],

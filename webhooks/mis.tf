@@ -1,7 +1,7 @@
-module "mis-build-infrastructure" {
+module "mis-infra-delius-mis-dev" {
   source = "./modules/events-target"
   event_target_map = {
-    name                = "mis-build-infra-delius-mis-dev"
+    name                = "mis-infra-delius-mis-dev"
     repository          = "hmpps-mis-terraform-repo"
     source_key          = "0"
     event_source        = local.webhook_info["dipatcher_bus_source_id"]

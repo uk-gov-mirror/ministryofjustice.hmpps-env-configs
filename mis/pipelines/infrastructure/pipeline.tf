@@ -1,7 +1,7 @@
 module "delius-mis-dev" {
   source            = "../../../modules/terraform-pipeline"
   environment_name  = "delius-mis-dev"
-  approval_required = false
+  approval_required = true
   artefacts_bucket  = local.artefacts_bucket
   prefix            = "${local.prefix}-delius-mis-dev"
   iam_role_arn      = local.iam_role_arn
