@@ -85,5 +85,6 @@ locals {
         MonitoringAndAlerts = ["monitoring"],
       }
     }
-  ] 
+  ]
+  environment_variables = [] 
 }

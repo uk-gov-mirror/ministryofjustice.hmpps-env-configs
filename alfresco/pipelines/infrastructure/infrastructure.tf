@@ -17,6 +17,7 @@ module "alfresco-dev" {
   }
   stages = local.infra_stages
   pre_stages = local.pre_stages
+  environment_variables = local.environment_variables
 }
 
 module "integration-envs" {

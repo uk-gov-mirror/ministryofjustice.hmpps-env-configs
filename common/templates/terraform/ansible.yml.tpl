@@ -16,3 +16,7 @@ phases:
         if [ $${TASK} == "ansible" ]; then
           sh run.sh $${ENVIRONMENT_NAME} $${TASK} $${COMPONENT} || (exit $$?)
         fi
+
+artifacts:
+  files:
+    - '**/tfpackage.tar'
