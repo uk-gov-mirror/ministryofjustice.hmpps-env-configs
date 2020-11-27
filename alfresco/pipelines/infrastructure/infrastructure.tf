@@ -13,7 +13,7 @@ module "alfresco-dev" {
   cache_bucket      = local.cache_bucket
   github_repositories = {
     code = ["hmpps-delius-alfresco-shared-terraform", "develop"]
-    utils = ["hmpps-engineering-pipelines-utils", "patch/update-package-creation-sequence"]
+    utils = ["hmpps-engineering-pipelines-utils", "develop"]
   }
   stages = local.infra_stages
   pre_stages = local.pre_stages
