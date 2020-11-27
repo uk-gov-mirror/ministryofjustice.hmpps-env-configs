@@ -1,7 +1,7 @@
 module "alfresco-dev" {
   source            = "../../../modules/terraform-pipeline"
   environment_name  = "alfresco-dev"
-  approval_required = true
+  approval_required = false
   artefacts_bucket  = local.artefacts_bucket
   prefix            = "${local.prefix}-alfresco-dev"
   iam_role_arn      = local.iam_role_arn

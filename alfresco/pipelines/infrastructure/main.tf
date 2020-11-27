@@ -39,51 +39,51 @@ locals {
         Common   = ["common"],
         SolrSnapShotID   = ["ansible/ebs/param_store", "ansible", "hmpps-eng-builds-terraform-ansible"]
       }
-    # },
-    # {
-    #   name = "Prereqs"
-    #   actions = {
-    #     AmiPermissions = ["ami_permissions"],
-    #     S3buckets      = ["s3buckets"],
-    #     IAM            = ["iam"],
-    #     SecurityGroups = ["security-groups"],
-    #   }
-    # },
-    # {
-    #   name = "Storage"
-    #   actions = {
-    #     EFS = ["efs"],
-    #     Memchached = ["elasticache-memcached"],
-    #   }
-    # },
-    # {
-    #   name = "Databases"
-    #   actions = {
-    #     RDSDatabase = ["database"],
-    #     ElkService = ["elk-service"],
-    #   }
-    # },
-    # {
-    #   name = "Solr"
-    #   actions = {
-    #     SolrIndex = ["solr"],
-    #   }
-    # },
-    # {
-    #   name = "Alfresco"
-    #   actions = {
-    #     AlfrescoNodes = ["asg"],
-    #   }
-    # },
-    # {
-    #   name = "Support"
-    #   actions = {
-    #     EsAdmin = ["es_admin"],
-    #     WAF = ["waf"],
-    #     CloudwatchExporter = ["cloudwatch_exporter"],
-    #     RestoreAlfrescoDocs = ["lambda/restoreDocs"],
-    #     MonitoringAndAlerts = ["monitoring"],
-    #   }
+    },
+    {
+      name = "Prereqs"
+      actions = {
+        AmiPermissions = ["ami_permissions"],
+        S3buckets      = ["s3buckets"],
+        IAM            = ["iam"],
+        SecurityGroups = ["security-groups"],
+      }
+    },
+    {
+      name = "Storage"
+      actions = {
+        EFS = ["efs"],
+        Memchached = ["elasticache-memcached"],
+      }
+    },
+    {
+      name = "Databases"
+      actions = {
+        RDSDatabase = ["database"],
+        ElkService = ["elk-service"],
+      }
+    },
+    {
+      name = "Solr"
+      actions = {
+        SolrIndex = ["solr"],
+      }
+    },
+    {
+      name = "Alfresco"
+      actions = {
+        AlfrescoNodes = ["asg"],
+      }
+    },
+    {
+      name = "Support"
+      actions = {
+        EsAdmin = ["es_admin"],
+        WAF = ["waf"],
+        CloudwatchExporter = ["cloudwatch_exporter"],
+        RestoreAlfrescoDocs = ["lambda/restoreDocs"],
+        MonitoringAndAlerts = ["monitoring"],
+      }
     }
   ]
   environment_variables = [] 
