@@ -48,28 +48,15 @@ resource "aws_codepipeline" "pipeline" {
             ProjectName   = var.package_project_name
             PrimarySource = "code"
             EnvironmentVariables = jsonencode(
-              [
-                {
-                  name  = "ENVIRONMENT_NAME"
-                  type  = "PLAINTEXT"
-                  value = var.environment_name
-                },
-                {
-                  "name" : "TASK",
-                  "value" : action.value[0],
-                  "type" : "PLAINTEXT"
-                },
-                {
-                  "name" : "BUILDS_CACHE_BUCKET",
-                  "value" : var.cache_bucket,
-                  "type" : "PLAINTEXT"
-                },
-                {
-                  "name" : "ARTEFACTS_BUCKET",
-                  "value" : var.artefacts_bucket,
-                  "type" : "PLAINTEXT"
-                }
-              ]
+              concat(
+                [
+                  {
+                    "name" : "TASK",
+                    "value" : action.value[0],
+                    "type" : "PLAINTEXT"
+                  }],
+                  local.environment_variables
+              )
             )
           }
         }
@@ -96,33 +83,21 @@ resource "aws_codepipeline" "pipeline" {
             ProjectName   = length(action.value) > 2 ? action.value[2] : var.tf_plan_project_name
             PrimarySource = "package"
             EnvironmentVariables = jsonencode(
-              [
-                {
-                  name  = "ENVIRONMENT_NAME"
-                  type  = "PLAINTEXT"
-                  value = var.environment_name
-                },
-                {
-                  name  = "COMPONENT"
-                  type  = "PLAINTEXT"
-                  value = action.value[0]
-                },
-                {
-                  "name" : "TASK",
-                  "value" : length(action.value) > 2 ? "${action.value[1]}" :"terraform_plan",
-                  "type" : "PLAINTEXT"
-                },
-                {
-                  "name" : "BUILDS_CACHE_BUCKET",
-                  "value" : var.cache_bucket,
-                  "type" : "PLAINTEXT"
-                },
-                {
-                  "name" : "ARTEFACTS_BUCKET",
-                  "value" : var.artefacts_bucket,
-                  "type" : "PLAINTEXT"
-                }
-              ]
+              concat(
+                [
+                  {
+                    name  = "COMPONENT"
+                    type  = "PLAINTEXT"
+                    value = action.value[0]
+                  },
+                  {
+                    "name" : "TASK",
+                    "value" : length(action.value) > 2 ? "${action.value[1]}" :"terraform_plan",
+                    "type" : "PLAINTEXT"
+                  }
+                ],
+                local.environment_variables
+              )
             )
           }
         }
@@ -156,33 +131,21 @@ resource "aws_codepipeline" "pipeline" {
             ProjectName   = length(action.value) > 2 ? action.value[2] : var.tf_apply_project_name
             PrimarySource = "package"
             EnvironmentVariables = jsonencode(
-              [
-                {
-                  name  = "ENVIRONMENT_NAME"
-                  type  = "PLAINTEXT"
-                  value = var.environment_name
-                },
-                {
-                  name  = "COMPONENT"
-                  type  = "PLAINTEXT"
-                  value = action.value[0]
-                },
-                {
-                  "name" : "TASK",
-                  "value" : length(action.value) > 2 ? "${action.value[1]}" : local.apply_task,
-                  "type" : "PLAINTEXT"
-                },
-                {
-                  "name" : "BUILDS_CACHE_BUCKET",
-                  "value" : var.cache_bucket,
-                  "type" : "PLAINTEXT"
-                },
-                {
-                  "name" : "ARTEFACTS_BUCKET",
-                  "value" : var.artefacts_bucket,
-                  "type" : "PLAINTEXT"
-                }
-              ]
+              concat(
+                [
+                  {
+                    name  = "COMPONENT"
+                    type  = "PLAINTEXT"
+                    value = action.value[0]
+                  },
+                  {
+                    "name" : "TASK",
+                    "value" : length(action.value) > 2 ? "${action.value[1]}" : local.apply_task,
+                    "type" : "PLAINTEXT"
+                  }
+                ],
+                local.environment_variables
+              )
             )
           }
         }
