@@ -17,6 +17,11 @@ locals {
         "name" : "ARTEFACTS_BUCKET",
         "value" : var.artefacts_bucket,
         "type" : "PLAINTEXT"
+      },
+      {
+        "name" : "PACKAGE_NAME",
+        "value" : var.package_name,
+        "type" : "PLAINTEXT"
       }
     ],
     var.environment_variables

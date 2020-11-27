@@ -79,6 +79,7 @@ resource "aws_codepipeline" "pipeline" {
           version         = "1"
           run_order       = 1
           input_artifacts = var.input_artifact
+          output_artifacts = ["${action.key}_plan"]
           configuration = {
             ProjectName   = length(action.value) > 2 ? action.value[2] : var.tf_plan_project_name
             PrimarySource = "package"
@@ -92,7 +93,7 @@ resource "aws_codepipeline" "pipeline" {
                   },
                   {
                     "name" : "TASK",
-                    "value" : length(action.value) > 2 ? "${action.value[1]}" :"terraform_plan",
+                    "value" : length(action.value) > 2 ? "${action.value[1]}-plan" :"terraform_plan",
                     "type" : "PLAINTEXT"
                   }
                 ],
@@ -126,10 +127,10 @@ resource "aws_codepipeline" "pipeline" {
           provider        = "CodeBuild"
           version         = "1"
           run_order       = 3
-          input_artifacts = var.input_artifact
+          input_artifacts = ["${action.key}_plan"]
           configuration = {
             ProjectName   = length(action.value) > 2 ? action.value[2] : var.tf_apply_project_name
-            PrimarySource = "package"
+            PrimarySource = "${action.key}_plan"
             EnvironmentVariables = jsonencode(
               concat(
                 [
