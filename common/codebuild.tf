@@ -15,7 +15,7 @@ module "terraform_package" {
     type = "LINUX_CONTAINER"
     image_pull_credentials_type = "SERVICE_ROLE"
   }
-  build_image = var.code_build["terraform_image"]
+  build_image = var.code_build["ansible3_image"]
   image_pull_credentials_type = "SERVICE_ROLE"
   environment_variables = [
     {

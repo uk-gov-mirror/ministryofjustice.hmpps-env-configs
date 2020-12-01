@@ -20,10 +20,12 @@ locals {
   projects = {
     terraform = data.terraform_remote_state.base.outputs.projects["terraform"]
     ansible   = "hmpps-eng-builds-ansible3"
+    python    = var.code_build["python_image"]
   }
   codebuild_projects = data.terraform_remote_state.common.outputs.codebuild_projects
   tags               = data.terraform_remote_state.common.outputs.tags
   log_group_name     = data.terraform_remote_state.common.outputs.codebuild_info["log_group"]
+  trigger_project  = "alfresco-infra-deploy-to-environments"
   pre_stages = [
     {
       name = "BuildPackages"
@@ -86,5 +88,16 @@ locals {
       }
     }
   ]
-  environment_variables = [] 
+  environment_variables = [
+    {
+      name  = "RELEASE_PKGS_PATH"
+      type  = "PLAINTEXT"
+      value = "projects/alfresco/infrastructure"
+    },
+    {
+      name  = "DEV_PIPELINE_NAME"
+      type  = "PLAINTEXT"
+      value = "alf-infra-build-alfresco-dev"
+    }
+  ] 
 }
