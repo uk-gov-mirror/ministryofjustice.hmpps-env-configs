@@ -18,8 +18,3 @@ data "terraform_remote_state" "base" {
     region = var.region
   }
 }
-
-# ssm
-data "aws_ssm_parameter" "jenkins_token" {
-  name = var.code_build["jenkins_token_ssm"]
-}
