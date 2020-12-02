@@ -3,16 +3,12 @@ locals {
     "alfresco-dev"
   ]
   protected_envs = [
-    "delius-training-test",
-    "delius-training",
-    "delius-test",
-    "delius-po-test1",
     "delius-stage",
     "delius-pre-prod",
-    "delius-perf",
     "delius-prod"
   ]
   prefix           = "alf-infra-build"
+  release_prefix   = "alf-release"
   artefacts_bucket = data.terraform_remote_state.common.outputs.codebuild_info["artefacts_bucket"]
   pipeline_bucket  = data.terraform_remote_state.common.outputs.codebuild_info["pipeline_bucket"]
   cache_bucket     = data.terraform_remote_state.common.outputs.codebuild_info["build_cache_bucket"]
@@ -26,6 +22,10 @@ locals {
   tags               = data.terraform_remote_state.common.outputs.tags
   log_group_name     = data.terraform_remote_state.common.outputs.codebuild_info["log_group"]
   trigger_project  = "alfresco-infra-deploy-to-environments"
+  release_repositories = {
+    code = ["hmpps-alfresco-infra-versions", "develop"]
+    utils = ["hmpps-engineering-pipelines-utils", "develop"]
+  }
   pre_stages = [
     {
       name = "BuildPackages"
@@ -100,4 +100,25 @@ locals {
       value = "codepipeline/alf-infra-build-alfresco-dev"
     }
   ] 
+  release_stages = [
+    {
+      name = "Prereqs"
+      actions = {
+        AmiPermissions = ["ami_permissions"],
+        SolrSnapShotID   = ["ansible/ebs/param_store", "ansible", "hmpps-eng-builds-terraform-ansible"]
+      }
+    },
+    {
+      name = "Solr"
+      actions = {
+        SolrIndex = ["solr"],
+      }
+    },
+    {
+      name = "Alfresco"
+      actions = {
+        AlfrescoNodes = ["asg"],
+      }
+    }
+  ]
 }
