@@ -18,11 +18,13 @@ phases:
     commands:
       - export HMPPS_BUILD_WORK_DIR=$${CODEBUILD_SRC_DIR}
       - export PACKAGE_VERSION="$(python utils/manage.py generate-build-version)-alpha" || (exit $?)
+      - export LATEST_PATH="alpha"
       - |
         if [ $${CODEBUILD_INITIATOR} == "$${DEV_PIPELINE_NAME}" ]; then
           python utils/manage.py create-tag -sha $${CODEBUILD_RESOLVED_SOURCE_VERSION} || (exit $?)
           sleep 15
           export PACKAGE_VERSION=$(python utils/manage.py get-version) || (exit $?)
+          export LATEST_PATH="latest"
         fi
       - make $${TASK} component=$${COMPONENT}
 
