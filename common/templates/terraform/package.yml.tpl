@@ -12,7 +12,7 @@ phases:
     commands:
       - rm -rf $${CODEBUILD_SRC_DIR}/utils $${CODEBUILD_SRC_DIR}/run.sh $${CODEBUILD_SRC_DIR}/Makefile $${CODEBUILD_SRC_DIR}/docker-run.py
       - cp -r $${CODEBUILD_SRC_DIR_utils}/* $${CODEBUILD_SRC_DIR}/
-      - test -f "configs/common.properties" && source "configs/common.properties"
+      - test -f "configs/common.properties" && source "configs/common.properties" || (exit $?)
 
   build:
     commands:
@@ -20,7 +20,7 @@ phases:
       - export PACKAGE_VERSION="$(python utils/manage.py generate-build-version)-alpha" || (exit $?)
       - |
         if [ $${CODEBUILD_INITIATOR} == "$${DEV_PIPELINE_NAME}" ]; then
-          python utils/manage.py create-release -sha $${CODEBUILD_RESOLVED_SOURCE_VERSION} || (exit $?)
+          python utils/manage.py create-tag -sha $${CODEBUILD_RESOLVED_SOURCE_VERSION} || (exit $?)
           sleep 15
           export PACKAGE_VERSION=$(python utils/manage.py get-version) || (exit $?)
         fi
