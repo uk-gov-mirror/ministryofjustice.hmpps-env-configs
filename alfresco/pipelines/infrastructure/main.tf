@@ -92,12 +92,12 @@ locals {
     {
       name  = "RELEASE_PKGS_PATH"
       type  = "PLAINTEXT"
-      value = "projects/alfresco/infrastructure"
+      value = "projects"
     },
     {
       name  = "DEV_PIPELINE_NAME"
       type  = "PLAINTEXT"
-      value = "alf-infra-build-alfresco-dev"
+      value = "codepipeline/alf-infra-build-alfresco-dev"
     }
   ] 
 }
