@@ -17,3 +17,19 @@ variable "refresh_environments" {
     "delius-stage"
   ]
 }
+
+variable "code_build" {
+  type = map(string)
+  default = {
+    github_org          = "ministryofjustice"
+    infra_repo          = "hmpps-delius-alfresco-shared-terraform"
+    packer_repo         = "hmpps-alfresco-packer"
+    jenkins_token_ssm   = "/jenkins/github/accesstoken"
+    artifact_expiration = 90
+    terraform_image     = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/terraform-builder-lite:latest"
+    docker_image        = "mojdigitalstudio/hmpps-docker-compose"
+    python_image        = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/ansible-builder-python-3:latest"
+    packer_image        = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/packer-builder:0.33.0"
+    ansible2_image      = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/ansible-builder:latest"
+  }
+}

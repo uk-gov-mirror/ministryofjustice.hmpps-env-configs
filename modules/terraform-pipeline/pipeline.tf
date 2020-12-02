@@ -127,7 +127,7 @@ resource "aws_codepipeline" "pipeline" {
           provider        = "CodeBuild"
           version         = "1"
           run_order       = 3
-          input_artifacts = ["${action.key}_plan"]
+          input_artifacts = var.approval_required ? ["${action.key}_plan"]: var.input_artifact
           configuration = {
             ProjectName   = length(action.value) > 2 ? action.value[2] : var.tf_apply_project_name
             PrimarySource = "${action.key}_plan"
