@@ -7,7 +7,7 @@ module "engineering_slack_alert" {
   tags            = local.tags
   environment = {
     environment_name = local.common_name
-    slack_channel    = "delius-alerts-engineering-dev"
+    slack_channel    = "delius-engineering-pipelines"
   }
   sns_publishers = [{
     type        = "Service"

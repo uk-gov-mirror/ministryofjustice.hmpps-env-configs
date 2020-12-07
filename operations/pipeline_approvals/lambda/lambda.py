@@ -143,7 +143,7 @@ def handler(event, context):
     logs = logs.filter_log_events(logGroupName=builds[0].get('logs').get('groupName'),
                                   logStreamNames=list(build.get('logs').get('streamName')
                                                       for build in builds),
-                                  filterPattern='"Plan: " " to add," "to change," "to destroy."')['events']
+                                  filterPattern='"TERRAFORM PLAN HAS FOUND SOME CHANGES"')['events']
 
     if len(logs) == 0:
         logger.info('No changes detected. Automatically approving request.')
