@@ -186,4 +186,105 @@ resource "aws_codepipeline" "pipeline" {
         }
       }
   }
+
+  #Apply DB
+    stage {
+      name = format("%s-db-apply", each.key)
+      action {
+        name            = "db-plan"
+        input_artifacts = ["code"]
+        category        = "Build"
+        owner           = "AWS"
+        provider        = "CodeBuild"
+        version         = "1"
+        run_order       = 1
+        configuration = {
+          ProjectName   = var.projects["restoredb"]
+          PrimarySource = "code"
+          EnvironmentVariables = jsonencode(
+            [
+              {
+                name  = "ARTEFACTS_BUCKET"
+                type  = "PLAINTEXT"
+                value = var.artefacts_bucket
+              },
+              {
+                name  = "ENVIRONMENT_NAME"
+                type  = "PLAINTEXT"
+                value = each.key
+              },
+              {
+                name  = "COMPONENT"
+                type  = "PLAINTEXT"
+                value = "database"
+              },
+              {
+                "name" : "ACTION_TYPE",
+                "value" : "terraform_plan",
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "PACKAGE_NAME",
+                "value" : "vcms-terraform.tar",
+                "type" : "PLAINTEXT"
+              }
+            ]
+          )
+        }
+      }
+      action {
+        name      = "Approve"
+        category  = "Approval"
+        owner     = "AWS"
+        provider  = "Manual"
+        version   = "1"
+        run_order = 2
+        configuration = {
+          CustomData = "Please review and approve change to proceed?"
+        }
+      }
+
+      action {
+        name            = "db-apply"
+        input_artifacts = ["code"]
+        category        = "Build"
+        owner           = "AWS"
+        provider        = "CodeBuild"
+        version         = "1"
+        run_order       = 3
+        configuration = {
+          ProjectName   = var.projects["restoredb"]
+          PrimarySource = "code"
+          EnvironmentVariables = jsonencode(
+            [
+            {
+              name  = "ARTEFACTS_BUCKET"
+              type  = "PLAINTEXT"
+              value = var.artefacts_bucket
+            },
+            {
+              name  = "ENVIRONMENT_NAME"
+              type  = "PLAINTEXT"
+              value = each.key
+            },
+            {
+              name  = "COMPONENT"
+              type  = "PLAINTEXT"
+              value = "database"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "terraform_apply",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PACKAGE_NAME",
+              "value" : "vcms-terraform.tar",
+              "type" : "PLAINTEXT"
+            }
+            ]
+          )
+        }
+      }
+    }
 }

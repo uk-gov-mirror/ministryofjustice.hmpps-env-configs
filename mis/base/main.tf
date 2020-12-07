@@ -20,6 +20,7 @@ locals {
   compute_type    = "BUILD_GENERAL1_SMALL"
   images = {
     terraform = var.code_build["terraform_image"]
+    mysql     = var.code_build["mysql_image"]
   }
   type = "LINUX_CONTAINER"
   project_names = {
@@ -31,5 +32,6 @@ locals {
     local.project_names["snapshot"],
   ]
 
-  build_spec = "buildspec.yml"
+  build_spec           = "buildspec.yml"
+  nextcloud_db_project = "nextcloud-db-backup"
 }
