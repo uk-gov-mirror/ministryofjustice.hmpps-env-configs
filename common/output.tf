@@ -43,6 +43,7 @@ output "tags" {
 output "codebuild_projects" {
   value = {
     terraform_plan    = module.terraform_plan.project_name
+    terraform_version = module.terraform_version.project_name
     terraform_apply   = module.terraform_apply.project_name
     terraform_package = module.terraform_package.project_name
     terraform_package_ssm = module.terraform_package_ssm.project_name

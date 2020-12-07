@@ -224,7 +224,7 @@ resource "aws_lambda_function" "dispatcher" {
   role          = aws_iam_role.lambda.arn
   memory_size   = 256
   timeout       = 60
-  runtime       = "python3.7"
+  runtime       = "python3.8"
   environment {
     variables = {
       EVENT_BUS_NAME      = local.event_bus_name,
@@ -248,7 +248,7 @@ resource "aws_lambda_function" "webhook-handler" {
   role          = aws_iam_role.lambda.arn
   memory_size   = 256
   timeout       = 60
-  runtime       = "python3.7"
+  runtime       = "python3.8"
 
 
   environment {

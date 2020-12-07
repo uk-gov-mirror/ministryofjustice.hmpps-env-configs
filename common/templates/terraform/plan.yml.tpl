@@ -11,9 +11,17 @@ phases:
     commands:
       - export HMPPS_BUILD_WORK_DIR=$${CODEBUILD_SRC_DIR}
       - tar xf tfpackage.tar -C $${CODEBUILD_SRC_DIR} --strip-components=2 || exit $?
+      - cat output.txt
   build:
     commands:
-      - make $${TASK} component=$${COMPONENT} || (exit $$?)
+      - make $${TASK} component=$${COMPONENT} || (exit $?)
+  post_build:
+    commands:
+      - make build_artefact
+
+artifacts:
+  files:
+    - '**/tfpackage.tar'
 
 cache:
   paths:

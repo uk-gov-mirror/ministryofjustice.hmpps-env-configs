@@ -86,3 +86,13 @@ variable "pre_stages" {
   }))
   default = []
 }
+
+variable "environment_variables" {
+  type = list
+  default = []
+}
+
+variable "package_name" {
+  type = string
+  default = "tfpackage.tar"
+}
