@@ -1,7 +1,7 @@
 module "alfresco-dev" {
   source            = "../../../modules/terraform-pipeline"
   environment_name  = "alfresco-dev"
-  approval_required = false
+  approval_required = true
   artefacts_bucket  = local.artefacts_bucket
   prefix            = "${local.prefix}-alfresco-dev"
   iam_role_arn      = local.iam_role_arn
@@ -18,6 +18,10 @@ module "alfresco-dev" {
   stages = local.infra_stages
   pre_stages = local.pre_stages
   environment_variables = local.environment_variables
+  pipeline_approval_config = {
+    CustomData      = "Please review plans and approve to proceed?"
+    NotificationArn = local.approval_notification_arn
+  }
 }
 
 module "delius-core-dev" {
