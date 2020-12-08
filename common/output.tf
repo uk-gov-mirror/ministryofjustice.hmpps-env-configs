@@ -42,14 +42,15 @@ output "tags" {
 
 output "codebuild_projects" {
   value = {
-    terraform_plan    = module.terraform_plan.project_name
-    terraform_version = module.terraform_version.project_name
-    terraform_apply   = module.terraform_apply.project_name
-    terraform_package = module.terraform_package.project_name
+    terraform_plan        = module.terraform_plan.project_name
+    terraform_version     = module.terraform_version.project_name
+    terraform_version_ssm = module.terraform_version_ssm.project_name
+    terraform_apply       = module.terraform_apply.project_name
+    terraform_package     = module.terraform_package.project_name
     terraform_package_ssm = module.terraform_package_ssm.project_name
-    ansible           = module.ansible_utils.project_name
-    python3           = aws_codebuild_project.python3.id
-    ansible3          = aws_codebuild_project.ansible3.id
-    ansible2          = aws_codebuild_project.ansible2.id
+    ansible               = module.ansible_utils.project_name
+    python3               = aws_codebuild_project.python3.id
+    ansible3              = aws_codebuild_project.ansible3.id
+    ansible2              = aws_codebuild_project.ansible2.id
   }
 }

@@ -18,3 +18,12 @@ data "terraform_remote_state" "base" {
     region = var.region
   }
 }
+
+data "terraform_remote_state" "approvals" {
+  backend = "s3"
+  config = {
+    bucket = var.remote_state_bucket_name
+    key    = "aws-migration-pipelines/operations/pipeline_approvals/terraform.tfstate"
+    region = var.region
+  }
+}
