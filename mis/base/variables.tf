@@ -26,5 +26,6 @@ variable "code_build" {
     jenkins_token_ssm   = "/jenkins/github/accesstoken"
     artifact_expiration = 90
     terraform_image     = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/terraform-builder-0-12"
+    mysql_image         = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/base-mysql"
   }
 }

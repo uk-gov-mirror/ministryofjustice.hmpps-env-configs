@@ -96,11 +96,16 @@ locals {
       value = "projects"
     },
     {
+      name  = "ENV_APPLY_OVERIDES"
+      type  = "PLAINTEXT"
+      value = "True"
+    },
+    {
       name  = "DEV_PIPELINE_NAME"
       type  = "PLAINTEXT"
       value = "codepipeline/alf-infra-build-alfresco-dev"
     }
-  ] 
+  ]
   release_stages = [
     {
       name = "Prereqs"
