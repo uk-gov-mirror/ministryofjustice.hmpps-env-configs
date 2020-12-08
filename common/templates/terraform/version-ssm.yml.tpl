@@ -2,15 +2,14 @@
 version: 0.2
 
 env:
-  variables:
-    SSM_PACKAGE_VERSION: "$${VERSION_SSM_PATH}/$${ENVIRONMENT_NAME}"
-    TG_REGION: eu-west-2
+  parameter-store:
+    PACKAGE_VERSION: "$${VERSION_SSM_PATH}/$${ENVIRONMENT_NAME}"
 
 phases:
   pre_build:
     commands:
-      - export PACKAGE_VERSION=$$(aws ssm get-parameters --with-decryption --names $${SSM_PACKAGE_VERSION} --region $${TG_REGION}  --query "Parameters[0]"."Value")
-      - env | grep "PACKAGE_VERSION"
+      - echo $${PACKAGE_VERSION} > output.txt
+      - cat output.txt
 
   build:
     commands:
