@@ -7,13 +7,13 @@ locals {
     "delius-pre-prod",
     "delius-prod"
   ]
-  prefix           = "alf-infra-build"
-  release_prefix   = "alf-release"
+  prefix                    = "alf-infra-build"
+  release_prefix            = "alf-release"
   approval_notification_arn = data.terraform_remote_state.approvals.outputs.topic_arn
-  artefacts_bucket = data.terraform_remote_state.common.outputs.codebuild_info["artefacts_bucket"]
-  pipeline_bucket  = data.terraform_remote_state.common.outputs.codebuild_info["pipeline_bucket"]
-  cache_bucket     = data.terraform_remote_state.common.outputs.codebuild_info["build_cache_bucket"]
-  iam_role_arn     = data.terraform_remote_state.common.outputs.codebuild_info["iam_role_arn"]
+  artefacts_bucket          = data.terraform_remote_state.common.outputs.codebuild_info["artefacts_bucket"]
+  pipeline_bucket           = data.terraform_remote_state.common.outputs.codebuild_info["pipeline_bucket"]
+  cache_bucket              = data.terraform_remote_state.common.outputs.codebuild_info["build_cache_bucket"]
+  iam_role_arn              = data.terraform_remote_state.common.outputs.codebuild_info["iam_role_arn"]
   projects = {
     terraform = data.terraform_remote_state.base.outputs.projects["terraform"]
     ansible   = "hmpps-eng-builds-ansible3"
@@ -22,16 +22,16 @@ locals {
   codebuild_projects = data.terraform_remote_state.common.outputs.codebuild_projects
   tags               = data.terraform_remote_state.common.outputs.tags
   log_group_name     = data.terraform_remote_state.common.outputs.codebuild_info["log_group"]
-  trigger_project  = "alfresco-infra-deploy-to-environments"
+  trigger_project    = "alfresco-infra-deploy-to-environments"
   release_repositories = {
-    code = ["hmpps-alfresco-infra-versions", "develop"]
+    code  = ["hmpps-alfresco-infra-versions", "develop"]
     utils = ["hmpps-engineering-pipelines-utils", "develop"]
   }
   pre_stages = [
     {
       name = "BuildPackages"
       actions = {
-        TerraformPackage   = ["build_tfpackage"]
+        TerraformPackage = ["build_tfpackage"]
       }
     }
   ]
@@ -39,8 +39,8 @@ locals {
     {
       name = "Common"
       actions = {
-        Common   = ["common"],
-        SolrSnapShotID   = ["ansible/ebs/param_store", "ansible", "hmpps-eng-builds-terraform-ansible"]
+        Common         = ["common"],
+        SolrSnapShotID = ["ansible/ebs/param_store", "ansible", "hmpps-eng-builds-terraform-ansible"]
       }
     },
     {
@@ -55,7 +55,7 @@ locals {
     {
       name = "Storage"
       actions = {
-        EFS = ["efs"],
+        EFS        = ["efs"],
         Memchached = ["elasticache-memcached"],
       }
     },
@@ -63,7 +63,7 @@ locals {
       name = "Databases"
       actions = {
         RDSDatabase = ["database"],
-        ElkService = ["elk-service"],
+        ElkService  = ["elk-service"],
       }
     },
     {
@@ -81,9 +81,9 @@ locals {
     {
       name = "Support"
       actions = {
-        EsAdmin = ["es_admin"],
-        WAF = ["waf"],
-        CloudwatchExporter = ["cloudwatch_exporter"],
+        EsAdmin             = ["es_admin"],
+        WAF                 = ["waf"],
+        CloudwatchExporter  = ["cloudwatch_exporter"],
         RestoreAlfrescoDocs = ["lambda/restoreDocs"],
         MonitoringAndAlerts = ["monitoring"],
       }
@@ -111,7 +111,7 @@ locals {
       name = "Prereqs"
       actions = {
         AmiPermissions = ["ami_permissions"],
-        SolrSnapShotID   = ["ansible/ebs/param_store", "ansible", "hmpps-eng-builds-terraform-ansible"]
+        SolrSnapShotID = ["ansible/ebs/param_store", "ansible", "hmpps-eng-builds-terraform-ansible"]
       }
     },
     {
