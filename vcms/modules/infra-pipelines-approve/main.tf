@@ -81,20 +81,17 @@ for_each = toset(var.environments)
       }
 
       #Approve
-      dynamic "action" {
-        for_each = stage.value.actions
-        content {
-          name            = "${action.key}Approve"
-          category        = "Approval"
-          owner           = "AWS"
-          provider        = "Manual"
-          version         = "1"
-          run_order       = 2
+        action {
+          name      = "Approval"
+          category  = "Approval"
+          owner     = "AWS"
+          provider  = "Manual"
+          version   = "1"
+          run_order = 2
           configuration = {
-            CustomData = "Please review and approve changes?"
+            CustomData = "Please review and approve change to proceed?"
           }
         }
-      }
 
       #Apply
       dynamic "action" {

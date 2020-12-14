@@ -39,52 +39,14 @@ module "dev-only" {
     code = ["hmpps-vcms-terraform", "master"]
   }
 
-  stages = [
-    {
-      name = "Network"
-      actions = {
-        Network   = "network"
-      }
-    },
-    {
-      name = "SecurityComponent"
-      actions = {
-        Keys             = "keys"
-        SecurityGroups   = "security-groups"
-      }
-    },
-    {
-      name = "AppComponents"
-      actions = {
-        DocumentStore   = "document-store"
-        Redis           = "redis"
-        Database        = "database"
-      }
-    },
-    {
-      name = "Application"
-      actions = {
-        Application   = "application"
-      }
-    },
-    {
-      name = "MonitoringTestingComponents"
-      actions = {
-        Monitoring   = "monitoring"
-        ConfigRules  = "config-rules"
-        Loadrunner   = "loadrunner"
-        AutoStart    = "auto-start"
-        ChaosMonkey  = "testing/chaosmonkey"
-      }
-    }
-  ]
+  stages = local.nonprod_infra_stages
 }
 
 
 #------------------------------------------------------------
 # Test Environments
 #------------------------------------------------------------
-module "test-envs" {
+module "test-environments" {
   source           = "../../modules/infra-pipelines"
   artefacts_bucket = local.artefacts_bucket
   pipeline_bucket  = local.pipeline_bucket
@@ -98,46 +60,29 @@ module "test-envs" {
     code = ["hmpps-vcms-infra-versions", "main"]
   }
 
-  stages = [
-    {
-      name = "Network"
-      actions = {
-        Network   = "network"
-      }
-    },
-    {
-      name = "SecurityComponent"
-      actions = {
-        Keys             = "keys"
-        SecurityGroups   = "security-groups"
-      }
-    },
-    {
-      name = "AppComponents"
-      actions = {
-        DocumentStore   = "document-store"
-        Redis           = "redis"
-        Database        = "database"
-      }
-    },
-    {
-      name = "Application"
-      actions = {
-        Application   = "application"
-      }
-    },
-    {
-      name = "MonitoringTestingComponents"
-      actions = {
-        Monitoring   = "monitoring"
-        ConfigRules  = "config-rules"
-        Loadrunner   = "loadrunner"
-        AutoStart    = "auto-start"
-        ChaosMonkey  = "testing/chaosmonkey"
-      }
-    }
-  ]
+  stages = local.nonprod_infra_stages
 }
+
+#------------------------------------------------------------
+# Non-Prod Environments
+#------------------------------------------------------------
+module "non-prod-environments" {
+  source           = "../../modules/infra-pipelines-approve"
+  artefacts_bucket = local.artefacts_bucket
+  pipeline_bucket  = local.pipeline_bucket
+  prefix           = "${local.prefix}-build-infra"
+  iam_role_arn     = local.iam_role_arn
+  tags             = var.tags
+  projects         = local.projects
+  environments     = ["stage", "pre-prod"]
+
+  github_repositories = {
+    code = ["hmpps-vcms-infra-versions", "main"]
+  }
+
+  stages = local.nonprod_infra_stages
+}
+
 
 #------------------------------------------------------------
 # Prod Environments
@@ -150,89 +95,18 @@ module "prod-environments" {
   iam_role_arn     = local.iam_role_arn
   tags             = var.tags
   projects         = local.projects
-  environments     = ["stage", "preprod", "prod"]
+  environments     = ["prod"]
 
   github_repositories = {
     code = ["hmpps-vcms-infra-versions", "main"]
   }
 
-  stages = [
-    {
-      name = "Network"
-      actions = {
-        network   = "network"
-      }
-    },
-    {
-      name = "Keys"
-      actions = {
-        Keys  = "keys"
-      }
-    },
-    {
-      name = "SecurityGroups"
-      actions = {
-        SecurityGroups = "security-groups"
-      }
-    },
-    {
-      name = "DocumentStore"
-      actions = {
-        DocumentStore = "document-store"
-      }
-    },
-    {
-      name = "Redis"
-      actions = {
-        Redis = "redis"
-      }
-    },
-    {
-      name = "Database"
-      actions = {
-        Database = "database"
-      }
-    },
-    {
-      name = "Application"
-      actions = {
-        Application = "application"
-      }
-    },
-    {
-      name = "ConfigRules"
-      actions = {
-        ConfigRules = "config-rules"
-      }
-    },
-    {
-      name = "Loadrunner"
-      actions = {
-        Loadrunner = "loadrunner"
-      }
-    },
-    {
-      name = "ChaosMonkey"
-      actions = {
-        ChaosMonkey = "testing/chaosmonkey"
-      }
-    },
-    {
-      name = "AutoStart"
-      actions = {
-        AutoStart = "auto-start"
-      }
-    },
-    {
-      name = "Monitoring"
-      actions = {
-        Monitoring = "monitoring"
-      }
-    }
-  ]
+  stages = local.prod_infra_stages
 }
 
-#DB Restore pipeline
+#------------------------------------------------------------
+# DB Restore pipeline
+#------------------------------------------------------------
 module "db-restore" {
   source           = "../../modules/restore-db"
   artefacts_bucket = local.artefacts_bucket

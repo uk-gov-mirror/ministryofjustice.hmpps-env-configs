@@ -7,4 +7,82 @@ locals {
     buildinfra = data.terraform_remote_state.base.outputs.projects["buildinfra"]
     restoredb  = data.terraform_remote_state.base.outputs.projects["restoredb"]
   }
+
+  nonprod_infra_stages = [
+    {
+      name = "network"
+      actions = {
+        network   = "network"
+      }
+    },
+    {
+      name = "SecurityComponents"
+      actions = {
+        Keys             = "keys"
+        SecurityGroups   = "security-groups"
+      }
+    },
+    {
+      name = "AppComponents"
+      actions = {
+        DocumentStore   = "document-store"
+        Redis           = "redis"
+        Database        = "database"
+      }
+    },
+    {
+      name = "Application"
+      actions = {
+        Application   = "application"
+      }
+    },
+    {
+      name = "MonitoringTestingComponents"
+      actions = {
+        Monitoring   = "monitoring"
+        ConfigRules  = "config-rules"
+        Loadrunner   = "loadrunner"
+        AutoStart    = "auto-start"
+        ChaosMonkey  = "testing/chaosmonkey"
+      }
+    }
+  ]
+
+  prod_infra_stages = [
+    {
+      name = "network"
+      actions = {
+        network   = "network"
+      }
+    },
+    {
+      name = "SecurityComponents"
+      actions = {
+        Keys             = "keys"
+        SecurityGroups   = "security-groups"
+      }
+    },
+    {
+      name = "AppComponents"
+      actions = {
+        DocumentStore   = "document-store"
+        Redis           = "redis"
+        Database        = "database"
+      }
+    },
+    {
+      name = "Application"
+      actions = {
+        Application   = "application"
+      }
+    },
+    {
+      name = "MonitoringTestingComponents"
+      actions = {
+        Monitoring   = "monitoring"
+        ConfigRules  = "config-rules"
+        Loadrunner   = "loadrunner"
+      }
+    }
+  ]
 }
