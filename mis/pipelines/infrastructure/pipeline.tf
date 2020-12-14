@@ -28,7 +28,7 @@ module "delius-mis-dev" {
 module "delius-auto-test" {
   source                = "../../../modules/terraform-pipeline"
   environment_name      = "delius-auto-test"
-  approval_required     = true
+  approval_required     = false
   artefacts_bucket      = local.artefacts_bucket
   prefix                = "${local.prefix}-delius-auto-test"
   iam_role_arn          = local.iam_role_arn

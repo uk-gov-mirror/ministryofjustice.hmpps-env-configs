@@ -84,6 +84,12 @@ locals {
       }
     },
     {
+      name = "FsxIntegration"
+      actions = {
+        FsxIntegration = ["fsx-integration"],
+      }
+    },
+    {
       name = "MISDatabase"
       actions = merge(
         {
@@ -150,6 +156,12 @@ locals {
       actions = {
         IAM            = ["iam"],
         SecurityGroups = ["security-groups"],
+      }
+    },
+    {
+      name = "FsxIntegration"
+      actions = {
+        FsxIntegration = ["fsx-integration"],
       }
     },
     {
@@ -222,6 +234,12 @@ locals {
       }
     },
     {
+      name = "FsxIntegration"
+      actions = {
+        FsxIntegration = ["fsx-integration"],
+      }
+    },
+    {
       name = "MISDatabase"
       actions = merge(
         {
@@ -291,6 +309,12 @@ locals {
       }
     },
     {
+      name = "FsxIntegration"
+      actions = {
+        FsxIntegration = ["fsx-integration"],
+      }
+    },
+    {
       name = "MISDatabase"
       actions = merge(
         {
@@ -357,6 +381,12 @@ locals {
       actions = {
         IAM            = ["iam"],
         SecurityGroups = ["security-groups"],
+      }
+    },
+    {
+      name = "FsxIntegration"
+      actions = {
+        FsxIntegration = ["fsx-integration"],
       }
     },
     {
