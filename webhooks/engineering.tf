@@ -26,10 +26,10 @@ module "create-pipelines-eng-dev" {
   }
 }
 
-module "create-pipelines-hmpps-base-packer" {
+module "hmpps-base-packer-linux-image-builder" {
   source = "./modules/events-target"
   event_target_map = {
-    name                = "create-pipelines-hmpps-base-packer"
+    name                = "hmpps-base-packer-linux-image-builder"
     repository          = "hmpps-base-packer"
     source_key          = "0"
     event_source        = local.webhook_info["dipatcher_bus_source_id"]
