@@ -36,17 +36,18 @@ locals {
         }
       }
   }
-  
+
   codebuild_project_names_stage_1_linux = {
     "Centos7"      = "${local.common_name}-centos7"
     "AmazonLinux"  = "${local.common_name}-amazonlinux"
     "AmazonLinux2" = "${local.common_name}-amazonlinux2"
     "KaliLinux"    = "${local.common_name}-kalilinux"
   }
-  
+
   codebuild_project_names_stage_2_linux = {
     "Centos7Docker"             = "${local.common_name}-centos7-docker"
     "AmazonLinux2Jira"          = "${local.common_name}-amazonlinux2-jira"
+    "AmazonLinux2Jira857"       = "${local.common_name}-amazonlinux2-jira857"
     "AmazonLinux2JenkinsAgent"  = "${local.common_name}-amazonlinux2-jenkins-agent"
   }
 
@@ -89,7 +90,7 @@ locals {
     local.codebuild_project_names_all_windows
   )
 
- 
+
   #======================
   # CodeBuild - General
   #======================
@@ -136,35 +137,35 @@ locals {
 
     environment_variables = [
       {
-        key = "AuthorDate"      
+        key = "AuthorDate"
         value = "#{SourceVariables.AuthorDate}"
       },
       {
-        key="BRANCH_NAME"     
+        key="BRANCH_NAME"
         value = "#{SourceVariables.BranchName}"
-      },       
+      },
       {
-        key="CommitId"        
+        key="CommitId"
         value = "#{SourceVariables.CommitId}"
       },
       {
-        key="CommitterDate"   
+        key="CommitterDate"
         value = "#{SourceVariables.CommitterDate}"
       },
       {
-        key="ARTIFACT_BUCKET" 
+        key="ARTIFACT_BUCKET"
         value = "tf-eu-west-2-hmpps-eng-dev-config-s3bucket"
       },
       {
-        key="ZAIZI_BUCKET"    
+        key="ZAIZI_BUCKET"
         value = "tf-eu-west-2-hmpps-eng-dev-artefacts-s3bucket"
       },
       {
-        key="AWS_REGION"      
+        key="AWS_REGION"
         value = var.region
       }
-    ]    
-    
+    ]
+
   }
 
   #=======================
@@ -172,7 +173,7 @@ locals {
   #=======================
   vpc_config = {
     vpc_id      = data.terraform_remote_state.vpc.outputs.vpc_id
-    
+
     subnet_ids = [
       data.terraform_remote_state.vpc.outputs.private-subnet-az1,
       data.terraform_remote_state.vpc.outputs.private-subnet-az2,
@@ -184,6 +185,6 @@ locals {
       data.terraform_remote_state.common.outputs.codebuild_info["packerbuilder_instance_security_group"],
     ]
   }
- 
+
 }
 
