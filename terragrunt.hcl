@@ -17,18 +17,20 @@ remote_state {
 
 terraform {
   extra_arguments "common_vars" {
-    commands = [
-      "destroy",
-      "plan",
-      "import",
-      "push",
-      "refresh",
-    ]
+    commands = get_terraform_commands_that_need_vars()
 
-    arguments = [
-      "-var-file=${get_parent_terragrunt_dir()}/env_configs/common.tfvars",
-      "-var-file=${get_parent_terragrunt_dir()}/env_configs/${get_env("TG_ENVIRONMENT", "ENVIRONMENT")}.tfvars",
+    optional_var_files = [
+      "${get_parent_terragrunt_dir()}/env_configs/common.tfvars",
+      "${get_parent_terragrunt_dir()}/env_configs/${get_env("TG_ENVIRONMENT", "ENVIRONMENT")}.tfvars",
+      # Engineering vars in AWS CI with Delius Pipelines run.sh
+      "${get_parent_terragrunt_dir()}/env_configs/env_configs/common.tfvars",
+      "${get_parent_terragrunt_dir()}/env_configs/env_configs/${get_env("TG_ENVIRONMENT", "")}.tfvars"
     ]
+  }
+
+  extra_arguments "disable_input" {
+    commands  = get_terraform_commands_that_need_input()
+    arguments = ["-input=false"]
   }
 }
 
