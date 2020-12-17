@@ -74,7 +74,7 @@ module "non-prod-environments" {
   iam_role_arn     = local.iam_role_arn
   tags             = var.tags
   projects         = local.projects
-  environments     = ["stage", "pre-prod"]
+  environments     = ["stage", "preprod"]
 
   github_repositories = {
     code = ["hmpps-vcms-infra-versions", "main"]
