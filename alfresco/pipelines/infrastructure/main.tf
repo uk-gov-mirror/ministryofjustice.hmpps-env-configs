@@ -75,7 +75,8 @@ locals {
     {
       name = "Alfresco"
       actions = {
-        AlfrescoNodes = ["asg"],
+        AlfrescoNodes   = ["asg"],
+        AlfrescoTracker = ["tracker"],
       }
     },
     {
@@ -123,7 +124,8 @@ locals {
     {
       name = "Alfresco"
       actions = {
-        AlfrescoNodes = ["asg"],
+        AlfrescoNodes   = ["asg"],
+        AlfrescoTracker = ["tracker"],
       }
     }
   ]
