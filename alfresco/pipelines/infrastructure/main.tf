@@ -118,14 +118,14 @@ locals {
     {
       name = "Solr"
       actions = {
-        SolrIndex       = ["solr"],
-        AlfrescoTracker = ["tracker"],
+        SolrIndex = ["solr"],
       }
     },
     {
       name = "Alfresco"
       actions = {
-        AlfrescoNodes = ["asg"],
+        AlfrescoNodes   = ["asg"],
+        AlfrescoTracker = ["tracker"],
       }
     }
   ]
