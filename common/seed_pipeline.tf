@@ -236,6 +236,33 @@ resource "aws_codepipeline" "pipeline" {
       }
     }
     action {
+      name            = "AlfPackerBuilds"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 2
+      configuration = {
+        ProjectName   = aws_codebuild_project.pipelines.id
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "COMPONENT",
+              "value" : "alfresco/pipelines/packer",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "TASK",
+              "value" : "terraform",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+    action {
       name            = "AlfRefreshEnvironments"
       input_artifacts = ["code"]
       category        = "Build"

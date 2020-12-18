@@ -14,3 +14,7 @@ variable "tags" {
   type    = map(string)
   default = {}
 }
+variable "event_rule_name" {
+  type    = string
+  default = ""
+}

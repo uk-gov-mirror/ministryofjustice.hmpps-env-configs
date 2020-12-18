@@ -1,0 +1,23 @@
+---
+version: 0.2
+
+env:
+  variables:
+    RPM_ARTIFACTS_BUCKET: "hmpps-eng-dev-alfresco-rpms"
+    DEP_ARTIFACTS_BUCKET: "tf-eu-west-2-hmpps-eng-dev-config-s3bucket"
+    EC2_REGION: "eu-west-2"
+    BRANCH_NAME: "develop"
+    TARGET_ENV: "dev"
+
+phases:
+  pre_build:
+    commands:
+      - export VERSION="alpha"
+      - |
+        if [ $${CODEBUILD_INITIATOR} == "$${DEV_PIPELINE_NAME}" ]; then
+          export VERSION="develop"
+        fi
+  build:
+    commands:
+      - ansible-galaxy install -r ansible/requirements.yml; USER=$(whoami) packer validate $${PACKER_FILE:-packer.json}
+      - ansible-galaxy install -r ansible/requirements.yml; PACKER_VERSION=$(packer --version) USER=$(whoami) packer build $${PACKER_FILE:-packer.json}
