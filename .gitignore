@@ -4,6 +4,7 @@
 env_configs
 **/*.terraform
 *plan_ret
+.env
 
 #  Local .terraform directories
 **/.terraform/*

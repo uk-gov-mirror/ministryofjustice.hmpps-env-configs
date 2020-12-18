@@ -3,7 +3,7 @@
 #--------------------------------------------------------------------
 
 resource "aws_cloudwatch_event_rule" "webhook" {
-  name        = var.event_target_map["name"]
+  name        = var.event_rule_name != "" ? var.event_rule_name : var.event_target_map["name"]
   description = var.event_target_map["name"]
   tags = merge(
     var.tags,
