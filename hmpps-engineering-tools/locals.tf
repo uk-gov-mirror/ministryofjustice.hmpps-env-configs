@@ -61,6 +61,7 @@ codebuild_project_names_stage_1_docker = {
     "base-psql"                 = "${local.common_name}-base-psql"
     "base-mysql"                = "${local.common_name}-base-mysql"
     "docker-cli"                = "${local.common_name}-docker-cli"
+    "base-snyk"                 = "${local.common_name}-base-snyk"
   }
 
   codebuild_project_names_stage_3_docker = {
