@@ -47,12 +47,15 @@ locals {
   codebuild_project_names_stage_2_linux = {
     "Centos7Docker"             = "${local.common_name}-centos7-docker"
     "AmazonLinux2Jira"          = "${local.common_name}-amazonlinux2-jira"
+    "AmazonLinux2Jira7"         = "${local.common_name}-amazonlinux2-jira7"
+    "AmazonLinux2Jira712"       = "${local.common_name}-amazonlinux2-jira712"
+    "AmazonLinux2Jira813"       = "${local.common_name}-amazonlinux2-jira813"
     "AmazonLinux2Jira857"       = "${local.common_name}-amazonlinux2-jira857"
     "AmazonLinux2JenkinsAgent"  = "${local.common_name}-amazonlinux2-jenkins-agent"
   }
 
   codebuild_project_names_stage_3_linux = {
-    "Centos7DockerECS"           = "${local.common_name}-centos7-docker-ecs"
+    "Centos7DockerECS"          = "${local.common_name}-centos7-docker-ecs"
     "Centos7DockerJenkinsAgent" = "${local.common_name}-centos7-docker-jenkins-agent"
   }
 
@@ -71,7 +74,7 @@ locals {
 
   codebuild_project_names_stage_2_windows = {
     "WindowsJenkinsAgent" = "${local.common_name}-windows-jenkins-agent"
-    "WindowsMISNart"       = "${local.common_name}-windows-misnart"
+    "WindowsMISNart"      = "${local.common_name}-windows-misnart"
   }
 
   codebuild_project_names_stage_3_windows = {
@@ -99,8 +102,8 @@ locals {
   queued_timeout = "30"
   service_role   = data.terraform_remote_state.common.outputs.codebuild_info["iam_role_arn_packer_ami_builder"]
 
-  region          = var.region
-  tags            = var.tags
+  region         = var.region
+  tags           = var.tags
 
   #======================
   # CodeBuild - Logs
