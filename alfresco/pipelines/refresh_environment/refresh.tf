@@ -20,23 +20,74 @@ resource "aws_codepipeline" "refresh" {
       output_artifacts = ["code"]
       configuration = {
         Owner                = "ministryofjustice"
-        Repo                 = "hmpps-delius-alfresco-shared-terraform"
+        Repo                 = "hmpps-alfresco-infra-versions"
         Branch               = "develop"
         PollForSourceChanges = false
       }
     }
     action {
-      name             = "versions"
+      name             = "utils"
       category         = "Source"
       owner            = "ThirdParty"
       provider         = "GitHub"
       version          = "1"
-      output_artifacts = ["versions"]
+      output_artifacts = ["utils"]
       configuration = {
         Owner                = "ministryofjustice"
-        Repo                 = "hmpps-alfresco-infra-versions"
+        Repo                 = "hmpps-engineering-pipelines-utils"
         Branch               = "develop"
         PollForSourceChanges = false
+      }
+    }
+  }
+  stage {
+    name = "BuildPackages"
+    action {
+      name             = "TerraformPackage"
+      input_artifacts  = ["code", "utils"]
+      output_artifacts = ["package"]
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      version          = "1"
+      run_order        = 1
+      configuration = {
+        ProjectName   = local.projects["version"]
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "ENVIRONMENT_NAME",
+              "value" : each.key,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : local.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PACKAGE_NAME",
+              "value" : "tfpackage.tar",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : local.cache_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "RELEASE_PKGS_PATH",
+              "value" : "projects",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "DEV_PIPELINE_NAME",
+              "value" : "codepipeline/alf-infra-build-alfresco-dev",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
       }
     }
   }
@@ -44,7 +95,7 @@ resource "aws_codepipeline" "refresh" {
     name = format("%s-summary", each.key)
     action {
       name            = "show-database-target"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -52,7 +103,7 @@ resource "aws_codepipeline" "refresh" {
       run_order       = 1
       configuration = {
         ProjectName   = local.projects["ansible"]
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -73,6 +124,11 @@ resource "aws_codepipeline" "refresh" {
             {
               "name" : "CREATE_SNAPSHOT",
               "value" : false,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "TASK",
+              "value" : "ansible",
               "type" : "PLAINTEXT"
             }
           ]
@@ -98,7 +154,7 @@ resource "aws_codepipeline" "refresh" {
     name = format("stage-1-%s-prepare", each.key)
     action {
       name            = "build-refresh-components"
-      input_artifacts = ["versions"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -106,7 +162,7 @@ resource "aws_codepipeline" "refresh" {
       run_order       = 1
       configuration = {
         ProjectName   = local.projects["terraform"]
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -115,8 +171,8 @@ resource "aws_codepipeline" "refresh" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
-              "value" : "build",
+              "name" : "TASK",
+              "value" : "apply",
               "type" : "PLAINTEXT"
             },
             {
@@ -125,13 +181,18 @@ resource "aws_codepipeline" "refresh" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
+              "name" : "COMPONENT",
+              "value" : "content_refresh",
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "COMPONENT",
-              "value" : "content_refresh",
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : local.cache_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "RELEASE_PKGS_PATH",
+              "value" : "projects",
               "type" : "PLAINTEXT"
             }
           ]
@@ -140,7 +201,7 @@ resource "aws_codepipeline" "refresh" {
     }
     action {
       name            = "stop-alfresco"
-      input_artifacts = ["versions"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -148,7 +209,7 @@ resource "aws_codepipeline" "refresh" {
       run_order       = 1
       configuration = {
         ProjectName   = local.projects["terraform"]
-        PrimarySource = "versions"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -157,18 +218,13 @@ resource "aws_codepipeline" "refresh" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
-              "value" : "build",
+              "name" : "TASK",
+              "value" : "apply",
               "type" : "PLAINTEXT"
             },
             {
               "name" : "ARTEFACTS_BUCKET",
               "value" : local.artefacts_bucket,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
               "type" : "PLAINTEXT"
             },
             {
@@ -180,6 +236,16 @@ resource "aws_codepipeline" "refresh" {
               "name" : "TF_VAR_restoring",
               "value" : "enabled",
               "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : local.cache_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "RELEASE_PKGS_PATH",
+              "value" : "projects",
+              "type" : "PLAINTEXT"
             }
           ]
         )
@@ -187,7 +253,7 @@ resource "aws_codepipeline" "refresh" {
     }
     action {
       name            = "stop-solr"
-      input_artifacts = ["versions"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -195,7 +261,7 @@ resource "aws_codepipeline" "refresh" {
       run_order       = 1
       configuration = {
         ProjectName   = local.projects["terraform"]
-        PrimarySource = "versions"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -204,18 +270,13 @@ resource "aws_codepipeline" "refresh" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
-              "value" : "build",
+              "name" : "TASK",
+              "value" : "apply",
               "type" : "PLAINTEXT"
             },
             {
               "name" : "ARTEFACTS_BUCKET",
               "value" : local.artefacts_bucket,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
               "type" : "PLAINTEXT"
             },
             {
@@ -227,6 +288,16 @@ resource "aws_codepipeline" "refresh" {
               "name" : "TF_VAR_restoring",
               "value" : "enabled",
               "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : local.cache_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "RELEASE_PKGS_PATH",
+              "value" : "projects",
+              "type" : "PLAINTEXT"
             }
           ]
         )
@@ -237,7 +308,7 @@ resource "aws_codepipeline" "refresh" {
     name = format("stage-2-%s-refresh-tasks", each.key)
     action {
       name            = "content-sync"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -245,7 +316,7 @@ resource "aws_codepipeline" "refresh" {
       run_order       = 1
       configuration = {
         ProjectName   = local.projects["ansible"]
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -254,23 +325,18 @@ resource "aws_codepipeline" "refresh" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
-              "value" : "build",
-              "type" : "PLAINTEXT"
-            },
-            {
               "name" : "ARTEFACTS_BUCKET",
               "value" : local.artefacts_bucket,
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
+              "name" : "COMPONENT",
+              "value" : "content_refresh",
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "COMPONENT",
-              "value" : "content_refresh",
+              "name" : "TASK",
+              "value" : "ansible",
               "type" : "PLAINTEXT"
             }
           ]
@@ -279,7 +345,7 @@ resource "aws_codepipeline" "refresh" {
     }
     action {
       name            = "solr-snapshot"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -287,7 +353,7 @@ resource "aws_codepipeline" "refresh" {
       run_order       = 1
       configuration = {
         ProjectName   = local.projects["ansible"]
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -296,23 +362,18 @@ resource "aws_codepipeline" "refresh" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
-              "value" : "build",
-              "type" : "PLAINTEXT"
-            },
-            {
               "name" : "ARTEFACTS_BUCKET",
               "value" : local.artefacts_bucket,
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
+              "name" : "COMPONENT",
+              "value" : "ansible/ebs/snapshot",
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "COMPONENT",
-              "value" : "ansible/ebs/snapshot",
+              "name" : "TASK",
+              "value" : "ansible",
               "type" : "PLAINTEXT"
             }
           ]
@@ -321,7 +382,7 @@ resource "aws_codepipeline" "refresh" {
     }
     action {
       name            = "create-snapshot"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -329,7 +390,7 @@ resource "aws_codepipeline" "refresh" {
       run_order       = 1
       configuration = {
         ProjectName   = local.projects["ansible"]
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -351,6 +412,11 @@ resource "aws_codepipeline" "refresh" {
               "name" : "CREATE_SNAPSHOT",
               "value" : true,
               "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "TASK",
+              "value" : "ansible",
+              "type" : "PLAINTEXT"
             }
           ]
         )
@@ -358,7 +424,7 @@ resource "aws_codepipeline" "refresh" {
     }
     action {
       name            = "restore-database"
-      input_artifacts = ["versions"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -366,7 +432,7 @@ resource "aws_codepipeline" "refresh" {
       run_order       = 2
       configuration = {
         ProjectName   = local.projects["terraform"]
-        PrimarySource = "versions"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -375,8 +441,8 @@ resource "aws_codepipeline" "refresh" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
-              "value" : "build",
+              "name" : "TASK",
+              "value" : "apply",
               "type" : "PLAINTEXT"
             },
             {
@@ -385,13 +451,18 @@ resource "aws_codepipeline" "refresh" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
+              "name" : "COMPONENT",
+              "value" : "database",
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "COMPONENT",
-              "value" : "database",
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : local.cache_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "RELEASE_PKGS_PATH",
+              "value" : "projects",
               "type" : "PLAINTEXT"
             }
           ]
@@ -417,7 +488,7 @@ resource "aws_codepipeline" "refresh" {
     name = format("stage-3-%s-final", each.key)
     action {
       name            = "set-solr-ebs-snapshot-id"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -425,7 +496,7 @@ resource "aws_codepipeline" "refresh" {
       run_order       = 1
       configuration = {
         ProjectName   = local.projects["ansible"]
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -444,13 +515,8 @@ resource "aws_codepipeline" "refresh" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
+              "name" : "TASK",
               "value" : "ansible",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
               "type" : "PLAINTEXT"
             }
           ]
@@ -459,7 +525,7 @@ resource "aws_codepipeline" "refresh" {
     }
     action {
       name            = "destroy-refresh-components"
-      input_artifacts = ["versions"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -467,7 +533,7 @@ resource "aws_codepipeline" "refresh" {
       run_order       = 1
       configuration = {
         ProjectName   = local.projects["terraform"]
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -476,8 +542,8 @@ resource "aws_codepipeline" "refresh" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
-              "value" : "destroy",
+              "name" : "TASK",
+              "value" : "terraform_destroy",
               "type" : "PLAINTEXT"
             },
             {
@@ -486,13 +552,18 @@ resource "aws_codepipeline" "refresh" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
+              "name" : "COMPONENT",
+              "value" : "content_refresh",
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "COMPONENT",
-              "value" : "content_refresh",
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : local.cache_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "RELEASE_PKGS_PATH",
+              "value" : "projects",
               "type" : "PLAINTEXT"
             }
           ]
@@ -501,7 +572,7 @@ resource "aws_codepipeline" "refresh" {
     }
     action {
       name            = "start-alfresco"
-      input_artifacts = ["versions"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -509,7 +580,7 @@ resource "aws_codepipeline" "refresh" {
       run_order       = 2
       configuration = {
         ProjectName   = local.projects["terraform"]
-        PrimarySource = "versions"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -518,8 +589,8 @@ resource "aws_codepipeline" "refresh" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
-              "value" : "build",
+              "name" : "TASK",
+              "value" : "apply",
               "type" : "PLAINTEXT"
             },
             {
@@ -528,13 +599,18 @@ resource "aws_codepipeline" "refresh" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
+              "name" : "COMPONENT",
+              "value" : "asg",
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "COMPONENT",
-              "value" : "asg",
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : local.cache_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "RELEASE_PKGS_PATH",
+              "value" : "projects",
               "type" : "PLAINTEXT"
             }
           ]
@@ -543,7 +619,7 @@ resource "aws_codepipeline" "refresh" {
     }
     action {
       name            = "start-solr"
-      input_artifacts = ["versions"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -551,7 +627,7 @@ resource "aws_codepipeline" "refresh" {
       run_order       = 2
       configuration = {
         ProjectName   = local.projects["terraform"]
-        PrimarySource = "versions"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -560,8 +636,8 @@ resource "aws_codepipeline" "refresh" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
-              "value" : "build",
+              "name" : "TASK",
+              "value" : "apply",
               "type" : "PLAINTEXT"
             },
             {
@@ -570,13 +646,18 @@ resource "aws_codepipeline" "refresh" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
+              "name" : "COMPONENT",
+              "value" : "solr",
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "COMPONENT",
-              "value" : "solr",
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : local.cache_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "RELEASE_PKGS_PATH",
+              "value" : "projects",
               "type" : "PLAINTEXT"
             }
           ]
