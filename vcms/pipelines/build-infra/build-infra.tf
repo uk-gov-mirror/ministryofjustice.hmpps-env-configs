@@ -54,7 +54,7 @@ module "test-environments" {
   iam_role_arn     = local.iam_role_arn
   tags             = var.tags
   projects         = local.projects
-  environments     = ["test", "perf"]
+  environments     = ["test", "perf", "stage"]
 
   github_repositories = {
     code = ["hmpps-vcms-infra-versions", "main"]
@@ -74,7 +74,7 @@ module "non-prod-environments" {
   iam_role_arn     = local.iam_role_arn
   tags             = var.tags
   projects         = local.projects
-  environments     = ["stage", "preprod"]
+  environments     = ["preprod"]
 
   github_repositories = {
     code = ["hmpps-vcms-infra-versions", "main"]
