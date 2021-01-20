@@ -168,7 +168,7 @@ resource "aws_codepipeline" "pipeline" {
       version          = "1"
       run_order        = 1
       configuration = {
-        ProjectName   = "vcms-trigger-code-pipeline"
+        ProjectName   = "vcms-build-app-trigger-code-pipeline"
         PrimarySource = "code"
         EnvironmentVariables = jsonencode(
           [
