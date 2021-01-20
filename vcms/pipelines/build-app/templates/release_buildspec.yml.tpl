@@ -19,7 +19,7 @@ phases:
       - cd builds
       - git config --global user.email "HMPPS_GITHUB_EMAIL" || exit 1
       - git config --global user.name "$HMPPS_GITHUB_USER"  || exit 1
-      - source git_taging.sh && tag   || exit 1
+      - source git_tagging.sh && tag   || exit 1
 artifacts:
   files:
     - '**/*'
