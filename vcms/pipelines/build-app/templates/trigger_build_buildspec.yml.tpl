@@ -34,20 +34,30 @@ phases:
     - aws_access_key_id=$(echo $temp_role | jq .Credentials.AccessKeyId | xargs)
     - aws_secret_access_key=$(echo $temp_role | jq .Credentials.SecretAccessKey | xargs)
     - aws_session_token=$(echo $temp_role | jq .Credentials.SessionToken | xargs)
-
     - echo [$PROFILE]                                         > $HOME/.aws/credentials
     - echo aws_access_key_id = $aws_access_key_id            >> $HOME/.aws/credentials
     - echo aws_secret_access_key = $aws_secret_access_key    >> $HOME/.aws/credentials
     - echo aws_session_token = $aws_session_token            >> $HOME/.aws/credentials
+
+    - |-
+        if [ -f temp_app_version.txt ]; then
+          echo "File temp_app_version.txt present"
+          source temp_app_version.txt
+          ENV_VAR_OVERIDES="name=APP_VERSION,value=$APP_VERSION,type=PLAINTEXT"
+        else
+          echo "File temp_app_version.txt not present"
+        fi
 
   build:
     commands:
       - echo "Triggering codebuild project $PROJECT_NAME in $ACCOUNT_ID"
 
       - |-
-          if [ "$ENV_VAR_OVERIDES" == "environment_variables_override" ]; then
+          if [ -z "$ENV_VAR_OVERIDES" ]; then
+            echo "aws codebuild start-build  --project-name $PROJECT_NAME --profile $PROFILE --region $REGION"
             BUILD_ID=$(aws codebuild start-build  --project-name $PROJECT_NAME --profile $PROFILE --region $REGION | jq -r .build.id) || exit 1
           else
+            echo "aws codebuild start-build  --project-name $PROJECT_NAME --environment-variables-override $ENV_VAR_OVERIDES  --profile $PROFILE --region $REGION"
             BUILD_ID=$(aws codebuild start-build  --project-name $PROJECT_NAME --environment-variables-override $ENV_VAR_OVERIDES  --profile $PROFILE --region $REGION | jq -r .build.id) || exit 1
           fi
 

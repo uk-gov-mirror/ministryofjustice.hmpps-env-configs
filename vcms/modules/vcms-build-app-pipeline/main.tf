@@ -157,7 +157,7 @@ resource "aws_codepipeline" "pipeline" {
   }
 
   stage {
-    name = "Promotion"
+    name = "Promotion-to-Dev"
     action {
       name             = "Promotion"
       input_artifacts  = ["tagcode"]

@@ -16,6 +16,7 @@ phases:
   build:
     commands:
       - sh deployment/get_branch.sh
+      - export BRANCH_NAME=$(cat builds/branch_name.txt)
       - cd builds
       - git config --global user.email "HMPPS_GITHUB_EMAIL" || exit 1
       - git config --global user.name "$HMPPS_GITHUB_USER"  || exit 1

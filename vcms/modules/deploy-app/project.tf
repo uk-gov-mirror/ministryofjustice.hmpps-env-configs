@@ -83,11 +83,6 @@ resource "aws_codebuild_project" "trigger-build" {
     }
 
     environment_variable {
-      name  = "ENV_VAR_OVERIDES"
-      value = "environment_variables_override"
-    }
-
-    environment_variable {
       name  = "PROJECT_NAME"
       value = "project_name"
     }

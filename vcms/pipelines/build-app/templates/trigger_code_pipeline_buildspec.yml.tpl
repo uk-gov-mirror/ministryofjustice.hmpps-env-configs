@@ -8,13 +8,12 @@ phases:
   build:
     commands:
       - echo "Triggering codepipeline $PIPELINE_NAME"
-      - BRANCH_NAME=$(cat builds/branch_name.txt) || exit 1
-      - APP_VERSION=$(cat builds/semvertag.txt)   || exit 1
-      - aws codepipeline get-pipeline --name $PIPELINE_NAME > pipeline.json || exit 1
-      - cp pipeline.json  temp_pipeline.json
-      - sed -i "s/current_eb_version/\$APP_VERSION/" temp_pipeline.json
-      - aws codepipeline update-pipeline --pipeline $PIPELINE_NAME   --cli-input-json file://temp_pipeline.json || exit 1
+      - BRANCH_NAME=$(cat builds/branch_name.txt)
+      - echo $BRANCH_NAME
+      - APP_VERSION=$(cat builds/semvertag.txt)
+      - aws ssm put-parameter --name "/codepipeline/temp/deploy/version/$PIPELINE_NAME" --type "String"  --value "$APP_VERSION" --region "$REGION" || exit 1
       - EXECUTION_ID=$(aws codepipeline start-pipeline-execution --name $PIPELINE_NAME | jq -r .pipelineExecutionId) || exit 1
+      - sleep 60
       - PIPELINE_STATUS=$(aws codepipeline get-pipeline-execution --pipeline-name $PIPELINE_NAME --pipeline-execution-id $EXECUTION_ID | jq -r .pipelineExecution.status)
       - |-
            while [ $PIPELINE_STATUS == "InProgress" ]
@@ -34,4 +33,4 @@ phases:
       - echo "PIPELINE $PIPELINE_NAME  EXECUTION_ID $EXECUTION_ID status is $PIPELINE_STATUS"
 
     finally:
-      - aws codepipeline update-pipeline  --pipeline $PIPELINE_NAME --cli-input-json file://pipeline.json
+      - aws ssm delete-parameter --name "/codepipeline/temp/deploy/version/$PIPELINE_NAME"

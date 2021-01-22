@@ -19,9 +19,16 @@ phases:
     - echo "aws_access_key_id = $aws_access_key_id"          >> $HOME/.aws/credentials
     - echo "aws_secret_access_key = $aws_secret_access_key"  >> $HOME/.aws/credentials
     - echo "aws_session_token = $aws_session_token"          >> $HOME/.aws/credentials
+    - TEMP_APP_VERSION=$(aws ssm get-parameters --region $REGION --names "/codepipeline/temp/deploy/version/vcms-$ENVIRONMENT_TYPE-deploy-app" --query "Parameters[0]"."Value" --output text)
     - |-
-          if [ "$APP_VERSION" == "eb_version" ] || [ -z $APP_VERSION ]; then
-              source configs/$ENV_TYPE.properties
+          if [ "$TEMP_APP_VERSION" != "None" ]; then
+               APP_VERSION=$TEMP_APP_VERSION
+               echo "export APP_VERSION=$APP_VERSION" > temp_app_version.txt
+          fi
+
+    - |-
+          if [ "$APP_VERSION" == "current_eb_version" ] || [ -z $APP_VERSION ]; then
+              source configs/$ENVIRONMENT_TYPE.properties
           fi
 
     - echo "APP_VERSION is $APP_VERSION"
@@ -63,3 +70,7 @@ phases:
 
     finally:
       - rm -rf $HOME/.aws
+
+artifacts:
+  files:
+    - '**/*'

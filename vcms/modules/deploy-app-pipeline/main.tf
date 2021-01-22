@@ -32,6 +32,7 @@ resource "aws_codepipeline" "pipeline" {
     action {
       name             = "Deploy-App"
       input_artifacts  = ["code"]
+      output_artifacts = ["deploycode"]
       category         = "Build"
       owner            = "AWS"
       provider         = "CodeBuild"
@@ -102,7 +103,7 @@ resource "aws_codepipeline" "pipeline" {
     name = "DB-Migration"
     action {
       name             = "DB-Migration"
-      input_artifacts  = ["code"]
+      input_artifacts  = ["deploycode"]
       category         = "Build"
       owner            = "AWS"
       provider         = "CodeBuild"
@@ -114,13 +115,8 @@ resource "aws_codepipeline" "pipeline" {
         EnvironmentVariables = jsonencode(
           [
             {
-              "name" : "ENV_TYPE",
-              "value" : var.environment_type,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ENV_VAR_OVERIDES",
-              "value" : "name=ACTION,value=migrate,type=PLAINTEXT",
+              "name" : "ACTION",
+              "value" : "migrate",
               "type" : "PLAINTEXT"
             },
             {
@@ -129,8 +125,8 @@ resource "aws_codepipeline" "pipeline" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "APP_VERSION",
-              "value" : "current_eb_version",
+              "name" : "ENV_TYPE",
+              "value" : var.environment_type,
               "type" : "PLAINTEXT"
             }
           ]
