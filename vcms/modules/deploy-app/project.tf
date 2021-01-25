@@ -2,8 +2,8 @@
 resource "aws_codebuild_project" "deploy-app" {
   name           = "${var.prefix}-deploy-app"
   description    = var.prefix
-  build_timeout  = "15"
-  queued_timeout = "30"
+  build_timeout  = "60"
+  queued_timeout = "60"
   service_role   = var.code_build["iam_role_arn"]
   tags = merge(
     var.tags,
@@ -48,8 +48,8 @@ resource "aws_codebuild_project" "deploy-app" {
 resource "aws_codebuild_project" "trigger-build" {
   name           = "${var.prefix}-trigger-build"
   description    = var.prefix
-  build_timeout  = "15"
-  queued_timeout = "30"
+  build_timeout  = "60"
+  queued_timeout = "60"
   service_role   = var.code_build["iam_role_arn"]
   tags = merge(
     var.tags,

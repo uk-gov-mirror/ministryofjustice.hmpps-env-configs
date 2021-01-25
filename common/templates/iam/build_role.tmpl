@@ -65,7 +65,8 @@
         "Effect": "Allow",
         "Sid": "AllowStartPipeLine",
         "Action": [
-            "codepipeline:StartPipelineExecution"
+            "codepipeline:StartPipelineExecution",
+            "codepipeline:GetPipelineExecution"
         ],
         "Resource": "*"
     },

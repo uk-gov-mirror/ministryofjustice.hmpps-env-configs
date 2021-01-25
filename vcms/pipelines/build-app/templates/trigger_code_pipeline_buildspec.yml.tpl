@@ -11,6 +11,16 @@ phases:
       - BRANCH_NAME=$(cat builds/branch_name.txt)
       - echo $BRANCH_NAME
       - APP_VERSION=$(cat builds/semvertag.txt)
+      - TEMP_APP_VERSION=$(aws ssm get-parameters --region $REGION --names "/codepipeline/temp/deploy/version/vcms-$ENVIRONMENT_TYPE-deploy-app" --query "Parameters[0]"."Value" --output text)
+
+      - |-
+           while [ $TEMP_APP_VERSION != "None" ]
+           do
+            echo "Waiting for Pipeline vcms-$ENVIRONMENT_TYPE-deploy-app to complete BUILD_TAG $TEMP_APP_VERSION"
+             sleep 30
+             TEMP_APP_VERSION=$(aws ssm get-parameters --region $REGION --names "/codepipeline/temp/deploy/version/vcms-$ENVIRONMENT_TYPE-deploy-app" --query "Parameters[0]"."Value" --output text) || exit 1
+           done
+
       - aws ssm put-parameter --name "/codepipeline/temp/deploy/version/$PIPELINE_NAME" --type "String"  --value "$APP_VERSION" --region "$REGION" || exit 1
       - EXECUTION_ID=$(aws codepipeline start-pipeline-execution --name $PIPELINE_NAME | jq -r .pipelineExecutionId) || exit 1
       - sleep 60

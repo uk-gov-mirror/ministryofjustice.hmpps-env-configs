@@ -2,8 +2,8 @@
 resource "aws_codebuild_project" "tagrepo" {
   name           = "${var.prefix}-tagrepo"
   description    = var.prefix
-  build_timeout  = "15"
-  queued_timeout = "30"
+  build_timeout  = "60"
+  queued_timeout = "60"
   service_role   = var.code_build["iam_role_arn"]
   tags = merge(
     var.tags,
@@ -48,8 +48,8 @@ resource "aws_codebuild_project" "tagrepo" {
 resource "aws_codebuild_project" "package" {
   name           = "${var.prefix}-package"
   description    = var.prefix
-  build_timeout  = "15"
-  queued_timeout = "30"
+  build_timeout  = "60"
+  queued_timeout = "60"
   service_role   = var.code_build["iam_role_arn"]
   tags = merge(
     var.tags,
@@ -93,8 +93,8 @@ resource "aws_codebuild_project" "package" {
 resource "aws_codebuild_project" "unit-test" {
   name           = "${var.prefix}-unit-test"
   description    = var.prefix
-  build_timeout  = "15"
-  queued_timeout = "30"
+  build_timeout  = "60"
+  queued_timeout = "60"
   service_role   = var.code_build["iam_role_arn"]
   tags = merge(
     var.tags,
@@ -137,8 +137,8 @@ resource "aws_codebuild_project" "unit-test" {
 resource "aws_codebuild_project" "snyk" {
   name           = "${var.prefix}-snyk"
   description    = var.prefix
-  build_timeout  = "15"
-  queued_timeout = "30"
+  build_timeout  = "60"
+  queued_timeout = "60"
   service_role   = var.code_build["iam_role_arn"]
   tags = merge(
     var.tags,
@@ -182,8 +182,8 @@ resource "aws_codebuild_project" "snyk" {
 resource "aws_codebuild_project" "code-pipeline" {
   name           = "${var.prefix}-trigger-code-pipeline"
   description    = var.prefix
-  build_timeout  = "15"
-  queued_timeout = "30"
+  build_timeout  = "60"
+  queued_timeout = "60"
   service_role   = var.code_build["iam_role_arn"]
   tags = merge(
     var.tags,
