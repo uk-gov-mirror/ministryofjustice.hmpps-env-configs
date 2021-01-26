@@ -8,6 +8,12 @@ locals {
     restoredb  = data.terraform_remote_state.base.outputs.projects["restoredb"]
   }
 
+  smoke_test_stage = [
+    {
+      name = "smoke-tests"
+    }
+  ]
+
   nonprod_infra_stages = [
     {
       name = "network"

@@ -78,4 +78,37 @@ for_each = toset(var.environments)
       }
     }
   }
+  dynamic "stage" {
+  for_each = var.test_stages
+  content {
+    name = stage.value.name
+    action {
+      name             = stage.value.name
+      input_artifacts  = ["code"]
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      version          = "1"
+      run_order        = 1
+      configuration = {
+        ProjectName   = "vcms-trigger-build"
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "ENV_TYPE",
+              "value" : each.key,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PROJECT_NAME",
+              "value" : "vcms-${each.key}-${stage.value.name}-build",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+  }
+ }
 }
