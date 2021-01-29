@@ -85,7 +85,6 @@ resource "aws_codepipeline" "pipeline" {
     action {
       name             = "vcms-package-app"
       input_artifacts  = ["tagcode"]
-      output_artifacts = ["packagecode"]
       category         = "Build"
       owner            = "AWS"
       provider         = "CodeBuild"
@@ -124,7 +123,6 @@ resource "aws_codepipeline" "pipeline" {
     action {
       name             = "vcms-package-artisan"
       input_artifacts  = ["tagcode"]
-      #output_artifacts = ["artisancode"]
       category         = "Build"
       owner            = "AWS"
       provider         = "CodeBuild"
@@ -161,7 +159,6 @@ resource "aws_codepipeline" "pipeline" {
     action {
       name             = "Promotion"
       input_artifacts  = ["tagcode"]
-      output_artifacts = ["promotioncode"]
       category         = "Build"
       owner            = "AWS"
       provider         = "CodeBuild"

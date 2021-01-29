@@ -11,19 +11,26 @@ phases:
       - BRANCH_NAME=$(cat builds/branch_name.txt)
       - echo $BRANCH_NAME
       - APP_VERSION=$(cat builds/semvertag.txt)
-      - TEMP_APP_VERSION=$(aws ssm get-parameters --region $REGION --names "/codepipeline/temp/deploy/version/vcms-$ENVIRONMENT_TYPE-deploy-app" --query "Parameters[0]"."Value" --output text)
 
+      #Check if pipeline is running.
+      - PIPELINE_EXECUTION_STATUS=$(aws codepipeline list-pipeline-executions  --pipeline-name $PIPELINE_NAME --max-items 1  --region $REGION | jq -r .pipelineExecutionSummaries[0].status)      || exit 1
       - |-
-           while [ $TEMP_APP_VERSION != "None" ]
+           while [ $PIPELINE_EXECUTION_STATUS == "InProgress" ]
            do
-            echo "Waiting for Pipeline vcms-$ENVIRONMENT_TYPE-deploy-app to complete BUILD_TAG $TEMP_APP_VERSION"
+             echo "Pipeline $PIPELINE_NAME is running, awaiting completion of current execution before proceeding"
              sleep 30
-             TEMP_APP_VERSION=$(aws ssm get-parameters --region $REGION --names "/codepipeline/temp/deploy/version/vcms-$ENVIRONMENT_TYPE-deploy-app" --query "Parameters[0]"."Value" --output text) || exit 1
+             PIPELINE_EXECUTION_STATUS=$(aws codepipeline list-pipeline-executions  --pipeline-name $PIPELINE_NAME --max-items 1  --region $REGION | jq -r .pipelineExecutionSummaries[0].status) || exit 1
            done
 
+      - echo "Creating SSM Param /codepipeline/temp/deploy/version/$PIPELINE_NAME"
+      - sleep 30
       - aws ssm put-parameter --name "/codepipeline/temp/deploy/version/$PIPELINE_NAME" --type "String"  --value "$APP_VERSION" --region "$REGION" || exit 1
+
+      #Trigger Pipeline
       - EXECUTION_ID=$(aws codepipeline start-pipeline-execution --name $PIPELINE_NAME | jq -r .pipelineExecutionId) || exit 1
       - sleep 60
+
+      #Check triggered pipeline status
       - PIPELINE_STATUS=$(aws codepipeline get-pipeline-execution --pipeline-name $PIPELINE_NAME --pipeline-execution-id $EXECUTION_ID | jq -r .pipelineExecution.status)
       - |-
            while [ $PIPELINE_STATUS == "InProgress" ]
@@ -33,6 +40,7 @@ phases:
              PIPELINE_STATUS=$(aws codepipeline get-pipeline-execution --pipeline-name $PIPELINE_NAME --pipeline-execution-id $EXECUTION_ID | jq -r .pipelineExecution.status) || exit 1
            done
 
+      #Exit on failure
       - |-
            if [ "$PIPELINE_STATUS" != "Succeeded" ]; then
              echo "PIPELINE $PIPELINE_NAME  EXECUTION_ID $EXECUTION_ID status is $PIPELINE_STATUS"
