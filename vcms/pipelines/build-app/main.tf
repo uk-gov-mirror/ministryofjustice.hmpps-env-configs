@@ -44,6 +44,9 @@ locals {
   load_test_stages = [
     {
       name = "load-test-data"
+    },
+    {
+      name = "set-test-passwords"
     }
   ]
 }

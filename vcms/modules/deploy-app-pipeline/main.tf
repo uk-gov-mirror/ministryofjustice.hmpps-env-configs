@@ -71,7 +71,7 @@ resource "aws_codepipeline" "pipeline" {
     name = stage.value.name
     action {
       name             = stage.value.name
-      input_artifacts  = ["code"]
+      input_artifacts  = ["deploycode"]
       category         = "Build"
       owner            = "AWS"
       provider         = "CodeBuild"

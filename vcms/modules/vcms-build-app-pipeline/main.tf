@@ -106,11 +106,6 @@ resource "aws_codepipeline" "pipeline" {
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "BUILD_ARGS",
-              "value" : "--build-arg RUN_COMPOSER=true --build-arg BUILD_TAG_ARG=$BUILD_TAG",
-              "type" : "PLAINTEXT"
-            },
-            {
               "name" : "ACCOUNT_ID",
               "value" : var.account_id,
               "type" : "PLAINTEXT"
@@ -155,9 +150,9 @@ resource "aws_codepipeline" "pipeline" {
   }
 
   stage {
-    name = "Promotion-to-Dev"
+    name = "Deploy"
     action {
-      name             = "Promotion"
+      name             = "VcmsDev"
       input_artifacts  = ["tagcode"]
       category         = "Build"
       owner            = "AWS"
@@ -172,6 +167,65 @@ resource "aws_codepipeline" "pipeline" {
             {
               "name" : "PIPELINE_NAME",
               "value" : "vcms-dev-deploy-app",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+  }
+
+  stage {
+    name = "Promotion"
+    action {
+      name             = "VcmsTest"
+      input_artifacts  = ["tagcode"]
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      version          = "1"
+      run_order        = 1
+      configuration = {
+        ProjectName   = "vcms-build-app-trigger-code-pipeline"
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "PROMOTION_LEVEL",
+              "value" : "post_dev",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "TARGET_PIPELINE",
+              "value" : "vcms-test-deploy-app",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+
+    action {
+      name             = "VcmsPerf"
+      input_artifacts  = ["tagcode"]
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      version          = "1"
+      run_order        = 1
+      configuration = {
+        ProjectName   = "vcms-build-app-trigger-code-pipeline"
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "PROMOTION_LEVEL",
+              "value" : "post_dev",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "TARGET_PIPELINE",
+              "value" : "vcms-perf-deploy-app",
               "type" : "PLAINTEXT"
             }
           ]
