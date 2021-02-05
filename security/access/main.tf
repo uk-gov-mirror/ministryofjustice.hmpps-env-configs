@@ -10,5 +10,52 @@ locals {
   log_group_name   = data.terraform_remote_state.common.outputs.codebuild_info["log_group"]
   tags             = data.terraform_remote_state.common.outputs.tags
   prefix           = "security-access"
-  projects         = data.terraform_remote_state.common.outputs.codebuild_projects
+  codebuild_projects = data.terraform_remote_state.common.outputs.codebuild_projects
+  stages = [
+    {
+      name = "Roles"
+      actions = {
+        UserRoles   = ["user-roles"],
+        RemoteRoles = ["remote-roles"]
+      }
+    },
+    {
+      name = "SecurityLogging"
+      actions = {
+        SecLogging = ["sec-logging"]
+      }
+    },
+    {
+      name = "Services"
+      actions = {
+        GuardDuty = ["guardduty"],
+        ConfigService = ["config-service"]
+      }
+    }
+  ]
+  pre_stages = [
+    {
+      name = "BuildPackages"
+      actions = {
+        TerraformPackage = ["build"]
+      }
+    }
+  ]
+  environment_variables = [
+    {
+      name  = "RELEASE_PKGS_PATH"
+      type  = "PLAINTEXT"
+      value = "projects"
+    },
+    {
+      name  = "ENV_APPLY_OVERIDES"
+      type  = "PLAINTEXT"
+      value = "True"
+    },
+    {
+      name  = "DEV_PIPELINE_NAME"
+      type  = "PLAINTEXT"
+      value = "codepipeline/security-access-alfresco-dev"
+    }
+  ]
 }

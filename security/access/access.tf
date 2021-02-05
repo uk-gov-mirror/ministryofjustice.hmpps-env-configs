@@ -1,38 +1,25 @@
-# module "security-access-terraform" {
-#   source            = "../../modules/terraform-pipeline"
-#   environment_name  = "hmpps-sandpit"
-#   approval_required = false
-#   artefacts_bucket  = local.artefacts_bucket
-#   prefix            = "${local.prefix}-terraform-components"
-#   iam_role_arn      = local.iam_role_arn
-#   project_name      = local.projects["terraform_utils"]
-#   log_group         = local.log_group_name
-#   tags              = local.tags
-#   cache_bucket      = local.cache_bucket
-#   github_repositories = {
-#     code = ["hmpps-security-access-terraform", "main"]
-#   }
-#   stages = [
-#     {
-#       name = "Roles"
-#       actions = {
-#         UserRoles   = "user-roles",
-#         RemoteRoles = "remote-roles"
-#       }
-#     },
-#     {
-#       name = "SecurityLogging"
-#       actions = {
-#         SecLogging = "sec-logging"
-#       }
-#     },
-#     {
-#       name = "Services"
-#       actions = {
-#         GuardDuty = "guardduty"
-#         ConfigService = "config-service"
-#       }
-#     }
-#   ]
-# }
-
+module "alfresco-dev" {
+  source                = "../../modules/terraform-pipeline"
+  environment_name      = "alf-dev"
+  approval_required     = false
+  artefacts_bucket      = local.artefacts_bucket
+  prefix                = "security-access-alfresco-dev"
+  iam_role_arn          = local.iam_role_arn
+  package_project_name  = local.codebuild_projects["terraform_package_no_tag"]
+  tf_apply_project_name = local.codebuild_projects["terraform_apply"]
+  tf_plan_project_name  = local.codebuild_projects["terraform_plan"]
+  log_group             = local.log_group_name
+  tags                  = local.tags
+  cache_bucket          = local.cache_bucket
+  github_repositories = {
+    code = ["hmpps-security-access-terraform", "main"]
+    utils = ["hmpps-engineering-pipelines-utils", "develop"]
+  }
+  stages = local.stages
+  pre_stages            = local.pre_stages
+  environment_variables = local.environment_variables
+  pipeline_approval_config = {
+    CustomData      = "Please review plans and approve to proceed?"
+    NotificationArn = ""
+  }
+}
