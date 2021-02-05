@@ -63,4 +63,7 @@ phases:
            fi
 
     finally:
-      - aws ssm delete-parameter --name "/codepipeline/temp/deploy/version/$PIPELINE_NAME"
+      - |-
+           if [ ! -z $PIPELINE_NAME ]; then
+               aws ssm delete-parameter --name "/codepipeline/temp/deploy/version/$PIPELINE_NAME"
+           fi
