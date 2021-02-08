@@ -165,6 +165,11 @@ resource "aws_codepipeline" "pipeline" {
         EnvironmentVariables = jsonencode(
           [
             {
+              "name" : "PROMOTION_LEVEL",
+              "value" : "dev",
+              "type" : "PLAINTEXT"
+            },
+            {
               "name" : "PIPELINE_NAME",
               "value" : "vcms-dev-deploy-app",
               "type" : "PLAINTEXT"
@@ -176,7 +181,7 @@ resource "aws_codepipeline" "pipeline" {
   }
 
   stage {
-    name = "Promotion"
+    name = "TestEnvsPromotion"
     action {
       name             = "VcmsTest"
       input_artifacts  = ["tagcode"]
@@ -192,7 +197,7 @@ resource "aws_codepipeline" "pipeline" {
           [
             {
               "name" : "PROMOTION_LEVEL",
-              "value" : "post_dev",
+              "value" : "test",
               "type" : "PLAINTEXT"
             },
             {
@@ -220,12 +225,71 @@ resource "aws_codepipeline" "pipeline" {
           [
             {
               "name" : "PROMOTION_LEVEL",
-              "value" : "post_dev",
+              "value" : "perf",
               "type" : "PLAINTEXT"
             },
             {
               "name" : "TARGET_PIPELINE",
               "value" : "vcms-perf-deploy-app",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+  }
+
+  stage {
+    name = "PreProdEnvsPromotion"
+    action {
+      name             = "VcmsStage"
+      input_artifacts  = ["tagcode"]
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      version          = "1"
+      run_order        = 1
+      configuration = {
+        ProjectName   = "vcms-build-app-trigger-code-pipeline"
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "PROMOTION_LEVEL",
+              "value" : "stage",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "TARGET_PIPELINE",
+              "value" : "vcms-stage-deploy-app",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+
+    action {
+      name             = "VcmsPreprod"
+      input_artifacts  = ["tagcode"]
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      version          = "1"
+      run_order        = 1
+      configuration = {
+        ProjectName   = "vcms-build-app-trigger-code-pipeline"
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "PROMOTION_LEVEL",
+              "value" : "preprod",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "TARGET_PIPELINE",
+              "value" : "vcms-preprod-deploy-app",
               "type" : "PLAINTEXT"
             }
           ]

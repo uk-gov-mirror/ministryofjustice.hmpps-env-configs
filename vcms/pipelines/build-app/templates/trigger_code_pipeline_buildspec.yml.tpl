@@ -11,15 +11,24 @@ phases:
       - echo $BRANCH_NAME
 
       - |-
-           if [ $PROMOTION_LEVEL = "post_dev" ]; then
-               if [ $BRANCH_NAME = "master" ]; then
+           if [[ $PROMOTION_LEVEL == "test" ]] || [[ $PROMOTION_LEVEL == "perf" ]]  || [[ $PROMOTION_LEVEL == "stage" ]]; then
+               if [[ $BRANCH_NAME == "master" ]]   ||  [[ $BRANCH_NAME == "staging" ]] || [[ $BRANCH_NAME == release* ]]; then
                    PIPELINE_NAME="$TARGET_PIPELINE"
+                   echo "Branch $BRANCH_NAME set for promotion to vcms$PROMOTION_LEVEL via PIPELINE $PIPELINE_NAME"
+               fi
+           fi
+
+      - |-
+           if [[ $PROMOTION_LEVEL == "preprod" ]]; then
+               if [[ $BRANCH_NAME == release* ]]   ||  [[ $BRANCH_NAME == hotfix* ]]; then
+                   PIPELINE_NAME="$TARGET_PIPELINE"
+                   echo "Branch $BRANCH_NAME set for promotion to vcms$PROMOTION_LEVEL via PIPELINE $PIPELINE_NAME"
                fi
            fi
 
       - |-
            if [ -z $PIPELINE_NAME ]; then
-               echo "Branch $BRANCH_NAME does not qualify to be promoted beyond dev environment"
+               echo "Branch $BRANCH_NAME does not qualify to be promoted to $TARGET_PIPELINE"
            else
                echo "Triggering codepipeline $PIPELINE_NAME"
                APP_VERSION=$(cat builds/semvertag.txt)
@@ -36,7 +45,7 @@ phases:
 
                echo "Creating SSM Param /codepipeline/temp/deploy/version/$PIPELINE_NAME"
                sleep 30
-               aws ssm put-parameter --name "/codepipeline/temp/deploy/version/$PIPELINE_NAME" --type "String"  --value "$APP_VERSION" --region "$REGION" || exit 1
+               aws ssm put-parameter --name "/codepipeline/temp/deploy/version/$PIPELINE_NAME" --type "String"  --value "$APP_VERSION"  --description "$APP_VERSION" --region "$REGION" || exit 1
 
                #Trigger Pipeline
                EXECUTION_ID=$(aws codepipeline start-pipeline-execution --name $PIPELINE_NAME | jq -r .pipelineExecutionId) || exit 1

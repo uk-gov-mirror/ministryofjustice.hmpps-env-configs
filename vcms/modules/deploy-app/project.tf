@@ -1,7 +1,7 @@
 ###deploy app
 resource "aws_codebuild_project" "deploy-app" {
   name           = "${var.prefix}-deploy-app"
-  description    = var.prefix
+  description    = "VCMS Deploy EB Application Project"
   build_timeout  = "60"
   queued_timeout = "60"
   service_role   = var.code_build["iam_role_arn"]
@@ -47,7 +47,7 @@ resource "aws_codebuild_project" "deploy-app" {
 ###Trigger Build Project
 resource "aws_codebuild_project" "trigger-build" {
   name           = "${var.prefix}-trigger-build"
-  description    = var.prefix
+  description    = "VCMS Trigger Codebuild Project"
   build_timeout  = "60"
   queued_timeout = "60"
   service_role   = var.code_build["iam_role_arn"]

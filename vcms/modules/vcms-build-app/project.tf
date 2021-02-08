@@ -1,7 +1,7 @@
 ###Tag repo
 resource "aws_codebuild_project" "tagrepo" {
   name           = "${var.prefix}-tagrepo"
-  description    = var.prefix
+  description    = "VCMS Tag repo project"
   build_timeout  = "60"
   queued_timeout = "60"
   service_role   = var.code_build["iam_role_arn"]
@@ -47,7 +47,7 @@ resource "aws_codebuild_project" "tagrepo" {
 ###Create docker images
 resource "aws_codebuild_project" "package" {
   name           = "${var.prefix}-package"
-  description    = var.prefix
+  description    = "VCMS Package docker artefacts"
   build_timeout  = "60"
   queued_timeout = "60"
   service_role   = var.code_build["iam_role_arn"]
@@ -92,7 +92,7 @@ resource "aws_codebuild_project" "package" {
 ##Unit tests
 resource "aws_codebuild_project" "unit-test" {
   name           = "${var.prefix}-unit-test"
-  description    = var.prefix
+  description    = "VCMS Unit Test"
   build_timeout  = "60"
   queued_timeout = "60"
   service_role   = var.code_build["iam_role_arn"]
@@ -136,7 +136,7 @@ resource "aws_codebuild_project" "unit-test" {
 ##Snyk
 resource "aws_codebuild_project" "snyk" {
   name           = "${var.prefix}-snyk"
-  description    = var.prefix
+  description    = "VCMS Snyk codebase scan"
   build_timeout  = "60"
   queued_timeout = "60"
   service_role   = var.code_build["iam_role_arn"]
@@ -181,7 +181,7 @@ resource "aws_codebuild_project" "snyk" {
 ###Trigger Codepipeline
 resource "aws_codebuild_project" "code-pipeline" {
   name           = "${var.prefix}-trigger-code-pipeline"
-  description    = var.prefix
+  description    = "VCMS trigger Codepipeline"
   build_timeout  = "60"
   queued_timeout = "60"
   service_role   = var.code_build["iam_role_arn"]
