@@ -196,6 +196,10 @@ module "delius-stage" {
   stages                = local.infra_stages
   pre_stages            = local.pre_stages
   environment_variables = local.environment_variables
+  pipeline_approval_config = {
+    CustomData      = "Please review plans and approve to proceed?"
+    NotificationArn = local.approval_notification_arn
+  }
 }
 
 module "delius-pre-prod" {
@@ -215,6 +219,10 @@ module "delius-pre-prod" {
   stages                = local.infra_stages
   pre_stages            = local.pre_stages
   environment_variables = local.environment_variables
+  pipeline_approval_config = {
+    CustomData      = "Please review plans and approve to proceed?"
+    NotificationArn = local.approval_notification_arn
+  }
 }
 
 module "delius-prod" {
@@ -234,4 +242,8 @@ module "delius-prod" {
   stages                = local.infra_stages
   pre_stages            = local.pre_stages
   environment_variables = local.environment_variables
+  pipeline_approval_config = {
+    CustomData      = "Please review plans and approve to proceed?"
+    NotificationArn = local.approval_notification_arn
+  }
 }
