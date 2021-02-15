@@ -148,6 +148,48 @@ resource "aws_codepipeline" "pipeline" {
         )
       }
     }
+    action {
+      name            = "pipeline-approvals"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 2
+      configuration = {
+        ProjectName   = aws_codebuild_project.pipelines.id
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "COMPONENT",
+              "value" : "operations/pipeline_approvals",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "TASK",
+              "value" : "terraform",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PRE_BUILD_TARGET",
+              "value" : "functions",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PRE_BUILD_ACTION",
+              "value" : "lambda_packages",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : aws_s3_bucket.artefacts.bucket,
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
   }
   stage {
     name = "Security"

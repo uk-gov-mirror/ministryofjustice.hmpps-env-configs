@@ -55,3 +55,7 @@ output "codebuild_projects" {
     ansible2                 = aws_codebuild_project.ansible2.id
   }
 }
+
+output "hmpps_account_ids" {
+  value = local.hmpps_account_ids
+}

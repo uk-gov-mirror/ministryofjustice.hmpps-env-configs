@@ -45,3 +45,16 @@ variable "code_build" {
   }
 }
 
+variable "aws_account_ids" {
+  type = map(string)
+}
+variable "aws_engineering_account_ids" {
+  type = map(string)
+}
+variable "vcms_account_ids" {
+  type = map(string)
+}
+
+variable "ecr_account_ids" {
+  type = map(string)
+}
