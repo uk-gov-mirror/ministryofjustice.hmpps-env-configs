@@ -400,5 +400,37 @@ resource "aws_codepipeline" "pipeline" {
         )
       }
     }
+    action {
+      name            = "acm_alerts_handler"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 1
+      configuration = {
+        ProjectName   = "alfresco-docker-tasks"
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "COMPONENT",
+              "value" : "acm_alerts_handler",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "package",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
   }
 }
