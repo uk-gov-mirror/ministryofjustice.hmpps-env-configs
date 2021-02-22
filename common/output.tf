@@ -49,6 +49,7 @@ output "codebuild_projects" {
     terraform_package        = module.terraform_package.project_name
     terraform_package_no_tag = module.terraform_package_no_tagging.project_name
     terraform_package_ssm    = module.terraform_package_ssm.project_name
+    github_tagger            = module.github_tagger.project_name
     ansible                  = module.ansible_utils.project_name
     python3                  = aws_codebuild_project.python3.id
     ansible3                 = aws_codebuild_project.ansible3.id

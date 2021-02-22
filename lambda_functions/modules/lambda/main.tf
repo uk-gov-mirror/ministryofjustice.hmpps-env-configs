@@ -24,12 +24,62 @@ resource "aws_codepipeline" "pipeline" {
         PollForSourceChanges = true
       }
     }
+    action {
+      name             = "utils"
+      category         = "Source"
+      owner            = "ThirdParty"
+      provider         = "GitHub"
+      version          = "1"
+      output_artifacts = ["utils"]
+      configuration = {
+        Owner                = var.repo_owner
+        Repo                 = "hmpps-engineering-pipelines-utils"
+        Branch               = "develop"
+        PollForSourceChanges = false
+      }
+    }
+  }
+  stage {
+    name = "Tags"
+    action {
+      name             = "github-tags"
+      input_artifacts  = ["code", "utils"]
+      output_artifacts = ["package"]
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      version          = "1"
+      run_order        = 1
+      configuration = {
+        ProjectName   = "hmpps-eng-builds-github-tagger"
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              name  = "ENV_APPLY_OVERIDES"
+              type  = "PLAINTEXT"
+              value = "True"
+            },
+            {
+              name  = "DEV_PIPELINE_NAME"
+              type  = "PLAINTEXT"
+              value = "codepipeline/${var.prefix}-functions-builder"
+            }
+          ]
+        )
+      }
+    }
   }
   stage {
     name = "Docker"
     action {
       name            = "python-builder"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -37,7 +87,7 @@ resource "aws_codepipeline" "pipeline" {
       run_order       = 1
       configuration = {
         ProjectName   = "alfresco-docker-tasks"
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -66,7 +116,7 @@ resource "aws_codepipeline" "pipeline" {
     }
     action {
       name            = "content-refresh"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -74,7 +124,7 @@ resource "aws_codepipeline" "pipeline" {
       run_order       = 1
       configuration = {
         ProjectName   = "alfresco-docker-tasks"
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -106,7 +156,7 @@ resource "aws_codepipeline" "pipeline" {
     name = "Boto3"
     action {
       name            = "boto3"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -114,7 +164,7 @@ resource "aws_codepipeline" "pipeline" {
       run_order       = 1
       configuration = {
         ProjectName   = "alfresco-docker-tasks"
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -138,7 +188,7 @@ resource "aws_codepipeline" "pipeline" {
     }
     action {
       name            = "webhook-handler"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -146,7 +196,7 @@ resource "aws_codepipeline" "pipeline" {
       run_order       = 1
       configuration = {
         ProjectName   = "alfresco-docker-tasks"
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -170,7 +220,7 @@ resource "aws_codepipeline" "pipeline" {
     }
     action {
       name            = "webhook-dispatcher"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -178,7 +228,7 @@ resource "aws_codepipeline" "pipeline" {
       run_order       = 1
       configuration = {
         ProjectName   = "alfresco-docker-tasks"
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -202,7 +252,7 @@ resource "aws_codepipeline" "pipeline" {
     }
     action {
       name            = "webhook-events"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -210,7 +260,7 @@ resource "aws_codepipeline" "pipeline" {
       run_order       = 1
       configuration = {
         ProjectName   = "alfresco-docker-tasks"
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -234,7 +284,7 @@ resource "aws_codepipeline" "pipeline" {
     }
     action {
       name            = "s3RestoreSubmit"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -242,7 +292,7 @@ resource "aws_codepipeline" "pipeline" {
       run_order       = 2
       configuration = {
         ProjectName   = "alfresco-docker-tasks"
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -271,7 +321,7 @@ resource "aws_codepipeline" "pipeline" {
     }
     action {
       name            = "s3RestoreWorker"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -279,7 +329,7 @@ resource "aws_codepipeline" "pipeline" {
       run_order       = 2
       configuration = {
         ProjectName   = "alfresco-docker-tasks"
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -306,7 +356,7 @@ resource "aws_codepipeline" "pipeline" {
     name = "Support"
     action {
       name            = "content-refresh"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -314,7 +364,7 @@ resource "aws_codepipeline" "pipeline" {
       run_order       = 1
       configuration = {
         ProjectName   = "alfresco-docker-tasks"
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -338,7 +388,7 @@ resource "aws_codepipeline" "pipeline" {
     }
     action {
       name            = "alert_handler"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -346,7 +396,7 @@ resource "aws_codepipeline" "pipeline" {
       run_order       = 1
       configuration = {
         ProjectName   = "alfresco-docker-tasks"
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -370,7 +420,7 @@ resource "aws_codepipeline" "pipeline" {
     }
     action {
       name            = "aws_elasticsearch"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -378,7 +428,7 @@ resource "aws_codepipeline" "pipeline" {
       run_order       = 1
       configuration = {
         ProjectName   = "alfresco-docker-tasks"
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -402,7 +452,7 @@ resource "aws_codepipeline" "pipeline" {
     }
     action {
       name            = "acm_alerts_handler"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -410,7 +460,7 @@ resource "aws_codepipeline" "pipeline" {
       run_order       = 1
       configuration = {
         ProjectName   = "alfresco-docker-tasks"
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
