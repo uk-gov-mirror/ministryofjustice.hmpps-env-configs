@@ -27,7 +27,6 @@ required_patches:
       grid_patch: false
       database_patch: true
       target_version: "19.9"
-
 ndelius_oauth_config:
  url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
  client_id: delius-unilink-dev
