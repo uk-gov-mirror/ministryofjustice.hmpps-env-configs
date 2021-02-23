@@ -1,3 +1,30 @@
+# github tagger
+module "github_tagger" {
+  source             = "../modules/codebuild-project"
+  name               = "${local.common_name}-github-tagger"
+  description        = "${local.common_name}-github-tagger"
+  build_timeout      = "30"
+  service_role       = aws_iam_role.codebuild.arn
+  tags               = local.tags
+  log_group          = module.create_loggroup.loggroup_name
+  buildspec          = templatefile("./templates/terraform/github-tagger.tpl", {})
+  build_compute_type = "BUILD_GENERAL1_SMALL"
+  build_type         = "LINUX_CONTAINER"
+  environment = {
+    compute_type                = "BUILD_GENERAL1_SMALL"
+    type                        = "LINUX_CONTAINER"
+    image_pull_credentials_type = "SERVICE_ROLE"
+  }
+  build_image                 = var.code_build["ansible3_image"]
+  image_pull_credentials_type = "SERVICE_ROLE"
+  environment_variables = [
+    {
+      name  = "RUNNING_IN_CONTAINER"
+      value = "True"
+    }
+  ]
+}
+
 # main terraform project
 module "terraform_package" {
   source             = "../modules/codebuild-project"

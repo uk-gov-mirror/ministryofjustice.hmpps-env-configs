@@ -10,7 +10,7 @@ data "aws_iam_policy_document" "artefacts" {
     actions = ["s3:Get*", "s3:List*"]
     resources = [
       aws_s3_bucket.artefacts.arn,
-      "${aws_s3_bucket.artefacts.arn}/lambda/eng-lambda-functions-builder/latest/*"
+      "${aws_s3_bucket.artefacts.arn}/lambda/eng-lambda-functions-builder/builds/*"
     ]
   }
 }
