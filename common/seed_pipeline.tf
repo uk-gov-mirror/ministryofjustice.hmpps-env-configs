@@ -140,6 +140,11 @@ resource "aws_codepipeline" "pipeline" {
               "type" : "PLAINTEXT"
             },
             {
+              "name" : "LAMBA_BUILD_VERSION",
+              "value" : var.code_build["lambda_version"],
+              "type" : "PLAINTEXT"
+            },
+            {
               "name" : "ARTEFACTS_BUCKET",
               "value" : aws_s3_bucket.artefacts.bucket,
               "type" : "PLAINTEXT"
@@ -179,6 +184,11 @@ resource "aws_codepipeline" "pipeline" {
             {
               "name" : "PRE_BUILD_ACTION",
               "value" : "lambda_packages",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "LAMBA_BUILD_VERSION",
+              "value" : var.code_build["lambda_version"],
               "type" : "PLAINTEXT"
             },
             {
