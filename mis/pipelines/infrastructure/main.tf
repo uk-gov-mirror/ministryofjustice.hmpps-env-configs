@@ -54,6 +54,14 @@ locals {
   approval_notification_arn = data.terraform_remote_state.approvals.outputs.topic_arn
 
   package_project_name = local.codebuild_projects["terraform_package_ssm"]
+
+  smoke_stages = [
+    {
+      name = "smoke-tests"
+    }
+  ]
+
+  smoke_test_suffix = "mis-smoke-tests-build"
   pre_stages = [
     {
       name = "BuildPackages"
