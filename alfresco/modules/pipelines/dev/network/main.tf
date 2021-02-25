@@ -122,7 +122,7 @@ resource "aws_codepipeline" "pipeline" {
             },
             {
               "name" : "COMPONENT",
-              "value" : "acm/alerts",
+              "value" : "acm_alerts",
               "type" : "PLAINTEXT"
             },
             {
