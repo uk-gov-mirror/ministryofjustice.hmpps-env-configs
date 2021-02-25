@@ -1,9 +1,3 @@
-variable "artefacts_bucket" {
-  type = string
-}
-variable "pipeline_bucket" {
-  type = string
-}
 variable "prefix" {
   type = string
 }
@@ -11,7 +5,7 @@ variable "iam_role_arn" {
   type = string
 }
 variable "environments" {
-  type    = list
+  type    = list(any)
   default = []
 }
 
@@ -37,4 +31,9 @@ variable "projects" {
 variable "repo_owner" {
   type    = string
   default = "ministryofjustice"
+}
+
+variable "pipeline_buckets" {
+  type    = map(string)
+  default = {}
 }
