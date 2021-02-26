@@ -1,6 +1,7 @@
 ---
 version: 0.2
 env:
+  shell: bash
   variables:
     REGION: "eu-west-2"
 
