@@ -1,11 +1,14 @@
 module "rds-restore" {
   source           = "../../modules/pipelines/restore_database"
-  artefacts_bucket = local.artefacts_bucket
-  pipeline_bucket  = local.pipeline_bucket
-  prefix           = "${local.prefix}-restore"
-  iam_role_arn     = local.iam_role_arn
-  repo_name        = "hmpps-alfresco-infra-versions"
-  repo_branch      = "develop"
+  pipeline_buckets = {
+    artefacts_bucket = local.artefacts_bucket
+    pipeline_bucket  = local.pipeline_bucket
+    cache_bucket     = local.pipeline_bucket
+  }
+  prefix       = "${local.prefix}-restore"
+  iam_role_arn = local.iam_role_arn
+  repo_name    = "hmpps-alfresco-infra-versions"
+  repo_branch  = "develop"
   environments = [
     "delius-stage",
     "delius-perf",

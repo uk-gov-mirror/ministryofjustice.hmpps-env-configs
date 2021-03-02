@@ -103,6 +103,43 @@ resource "aws_codepipeline" "pipeline" {
       }
     }
     action {
+      name            = "acm-alerts"
+      input_artifacts = ["code"]
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 2
+      configuration = {
+        ProjectName   = var.projects["terraform"]
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "ENVIRONMENT_NAME",
+              "value" : each.key,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "COMPONENT",
+              "value" : "acm_alerts",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.artefacts_bucket,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ACTION_TYPE",
+              "value" : "build",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+    action {
       name            = "natgateway"
       input_artifacts = ["code"]
       category        = "Build"

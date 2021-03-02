@@ -63,7 +63,7 @@ resource "aws_codepipeline" "pipeline" {
       }
     }
   }
-  
+
   dynamic "stage" {
     for_each = var.stages
     content {
@@ -153,4 +153,39 @@ resource "aws_codepipeline" "pipeline" {
       }
     }
   }
+
+  # Trigger Smoke Test
+  dynamic "stage" {
+  for_each = var.test_stages
+  content {
+    name = stage.value.name
+    action {
+      name             = stage.value.name
+      input_artifacts = var.input_artifact
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      version          = "1"
+      run_order        = 1
+      configuration = {
+        ProjectName   = "delius-trigger-build"
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "ENV_NAME",
+              "value" : var.environment_name,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PROJECT_NAME",
+              "value" : var.smoke_test_pipeline_name,
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
+  }
+ }
 }

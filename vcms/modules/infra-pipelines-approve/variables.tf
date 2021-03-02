@@ -41,3 +41,7 @@ variable "stages" {
 variable "github_repositories" {
   type = map(list(string))
 }
+
+variable "test_stages" {
+  default = []
+}

@@ -37,7 +37,7 @@ resource "aws_codepipeline" "pipeline" {
       version         = "1"
       run_order       = 1
       configuration = {
-        ProjectName   = var.projects["ansible2"]
+        ProjectName   = var.projects["ansible"]
         PrimarySource = "code"
         EnvironmentVariables = jsonencode(
           [

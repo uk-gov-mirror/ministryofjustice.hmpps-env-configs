@@ -58,14 +58,25 @@
         "arn:aws:s3:::tf-eu-west-2-hmpps-eng-dev-certificates-private-s3bucket",
         "arn:aws:s3:::tf-eu-west-2-hmpps-eng-dev-certificates-private-s3bucket/*",
         "arn:aws:kms:eu-west-2:895523100917:key/*",
-        "arn:aws:kms:eu-west-2:723123699647:key/*"
+        "arn:aws:kms:eu-west-2:723123699647:key/*",
+        "arn:aws:kms:eu-west-2:716683748953:key/*",
+        "arn:aws:kms:eu-west-2:130847504577:key/*",
+        "arn:aws:kms:eu-west-2:728765553488:key/*",
+        "arn:aws:kms:eu-west-2:431912413968:key/*",
+        "arn:aws:kms:eu-west-2:205048117103:key/*",
+        "arn:aws:kms:eu-west-2:330914586320:key/*",
+        "arn:aws:kms:eu-west-2:130975965028:key/*",
+        "arn:aws:kms:eu-west-2:010587221707:key/*",
+        "arn:aws:kms:eu-west-2:050243167760:key/*"
       ]
     },
     {
         "Effect": "Allow",
         "Sid": "AllowStartPipeLine",
         "Action": [
-            "codepipeline:StartPipelineExecution"
+            "codepipeline:StartPipelineExecution",
+            "codepipeline:GetPipelineExecution",
+            "codepipeline:ListPipelineExecutions"
         ],
         "Resource": "*"
     },

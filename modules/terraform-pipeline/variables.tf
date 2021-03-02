@@ -96,3 +96,15 @@ variable "package_name" {
   type = string
   default = "tfpackage.tar"
 }
+
+variable "test_stages" {
+  type = list(object({
+    name    = string
+  }))
+  default = []
+}
+
+variable "smoke_test_pipeline_name" {
+  description = "Smoke Test Pipeline Name"
+  default = "null"
+}

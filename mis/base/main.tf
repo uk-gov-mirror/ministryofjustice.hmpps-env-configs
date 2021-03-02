@@ -34,4 +34,5 @@ locals {
 
   build_spec           = "buildspec.yml"
   nextcloud_db_project = "nextcloud-db-backup"
+  trigger_build_name   = "delius-trigger-build"
 }

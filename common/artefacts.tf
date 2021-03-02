@@ -1,3 +1,24 @@
+data "aws_iam_policy_document" "artefacts" {
+  statement {
+    effect = "Allow"
+    principals {
+      type = "AWS"
+      identifiers = concat(
+        values(local.hmpps_account_ids)
+      )
+    }
+    actions = ["s3:Get*", "s3:List*"]
+    resources = [
+      aws_s3_bucket.artefacts.arn,
+      "${aws_s3_bucket.artefacts.arn}/lambda/eng-lambda-functions-builder/builds/*"
+    ]
+  }
+}
+
+resource "aws_s3_bucket_policy" "artefacts" {
+  bucket = aws_s3_bucket.artefacts.id
+  policy = data.aws_iam_policy_document.artefacts.json
+}
 resource "aws_s3_bucket" "artefacts" {
   bucket = "${local.common_name}-artefact"
   acl    = "private"

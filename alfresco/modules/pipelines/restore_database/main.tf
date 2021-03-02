@@ -6,7 +6,7 @@ resource "aws_codepipeline" "pipeline" {
 
   artifact_store {
     type     = "S3"
-    location = var.pipeline_bucket
+    location = var.pipeline_buckets["pipeline_bucket"]
   }
 
   stage {
@@ -25,20 +25,85 @@ resource "aws_codepipeline" "pipeline" {
         PollForSourceChanges = false
       }
     }
+    action {
+      name             = "utils"
+      category         = "Source"
+      owner            = "ThirdParty"
+      provider         = "GitHub"
+      version          = "1"
+      output_artifacts = ["utils"]
+      configuration = {
+        Owner                = "ministryofjustice"
+        Repo                 = "hmpps-engineering-pipelines-utils"
+        Branch               = "develop"
+        PollForSourceChanges = false
+      }
+    }
+  }
+  stage {
+    name = "BuildPackages"
+    action {
+      name             = "TerraformPackage"
+      input_artifacts  = ["code", "utils"]
+      output_artifacts = ["package"]
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      version          = "1"
+      run_order        = 1
+      configuration = {
+        ProjectName   = var.projects["version"]
+        PrimarySource = "code"
+        EnvironmentVariables = jsonencode(
+          [
+            {
+              "name" : "ENVIRONMENT_NAME",
+              "value" : each.key,
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "ARTEFACTS_BUCKET",
+              "value" : var.pipeline_buckets["artefacts_bucket"],
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "PACKAGE_NAME",
+              "value" : "tfpackage.tar",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : var.pipeline_buckets["cache_bucket"],
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "RELEASE_PKGS_PATH",
+              "value" : "projects",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "DEV_PIPELINE_NAME",
+              "value" : "codepipeline/alf-infra-build-alfresco-dev",
+              "type" : "PLAINTEXT"
+            }
+          ]
+        )
+      }
+    }
   }
   stage {
     name = format("%s-services-stop", each.key)
     action {
       name            = "alfresco_plan"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
       run_order       = 1
       configuration = {
-        ProjectName   = var.projects["terraform"]
-        PrimarySource = "code"
+        ProjectName   = var.projects["plan"]
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -53,12 +118,12 @@ resource "aws_codepipeline" "pipeline" {
             },
             {
               "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
+              "value" : var.pipeline_buckets["artefacts_bucket"],
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
-              "value" : "plan",
+              "name" : "TASK",
+              "value" : "terraform_plan",
               "type" : "PLAINTEXT"
             },
             {
@@ -70,6 +135,11 @@ resource "aws_codepipeline" "pipeline" {
               "name" : "TF_VAR_restoring",
               "value" : "enabled",
               "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : var.pipeline_buckets["cache_bucket"],
+              "type" : "PLAINTEXT"
             }
           ]
         )
@@ -77,15 +147,15 @@ resource "aws_codepipeline" "pipeline" {
     }
     action {
       name            = "solr_plan"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
       run_order       = 1
       configuration = {
-        ProjectName   = var.projects["terraform"]
-        PrimarySource = "code"
+        ProjectName   = var.projects["plan"]
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -100,12 +170,12 @@ resource "aws_codepipeline" "pipeline" {
             },
             {
               "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
+              "value" : var.pipeline_buckets["artefacts_bucket"],
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
-              "value" : "plan",
+              "name" : "TASK",
+              "value" : "terraform_plan",
               "type" : "PLAINTEXT"
             },
             {
@@ -116,6 +186,11 @@ resource "aws_codepipeline" "pipeline" {
             {
               "name" : "TF_VAR_restoring",
               "value" : "enabled",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : var.pipeline_buckets["cache_bucket"],
               "type" : "PLAINTEXT"
             }
           ]
@@ -135,15 +210,15 @@ resource "aws_codepipeline" "pipeline" {
     }
     action {
       name            = "alfresco_apply"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
       run_order       = 3
       configuration = {
-        ProjectName   = var.projects["terraform"]
-        PrimarySource = "code"
+        ProjectName   = var.projects["apply"]
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -158,12 +233,12 @@ resource "aws_codepipeline" "pipeline" {
             },
             {
               "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
+              "value" : var.pipeline_buckets["artefacts_bucket"],
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
-              "value" : "build",
+              "name" : "TASK",
+              "value" : "terraform_apply",
               "type" : "PLAINTEXT"
             },
             {
@@ -175,6 +250,11 @@ resource "aws_codepipeline" "pipeline" {
               "name" : "TF_VAR_restoring",
               "value" : "enabled",
               "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : var.pipeline_buckets["cache_bucket"],
+              "type" : "PLAINTEXT"
             }
           ]
         )
@@ -182,15 +262,15 @@ resource "aws_codepipeline" "pipeline" {
     }
     action {
       name            = "solr_apply"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
       run_order       = 3
       configuration = {
-        ProjectName   = var.projects["terraform"]
-        PrimarySource = "code"
+        ProjectName   = var.projects["apply"]
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -205,12 +285,12 @@ resource "aws_codepipeline" "pipeline" {
             },
             {
               "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
+              "value" : var.pipeline_buckets["artefacts_bucket"],
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
-              "value" : "build",
+              "name" : "TASK",
+              "value" : "terraform_apply",
               "type" : "PLAINTEXT"
             },
             {
@@ -222,6 +302,11 @@ resource "aws_codepipeline" "pipeline" {
               "name" : "TF_VAR_restoring",
               "value" : "enabled",
               "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : var.pipeline_buckets["cache_bucket"],
+              "type" : "PLAINTEXT"
             }
           ]
         )
@@ -232,7 +317,7 @@ resource "aws_codepipeline" "pipeline" {
     name = format("%s-database-destroy", each.key)
     action {
       name            = "database_destroy"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -240,7 +325,7 @@ resource "aws_codepipeline" "pipeline" {
       run_order       = 1
       configuration = {
         ProjectName   = var.projects["ansible"]
-        PrimarySource = "code"
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -255,11 +340,11 @@ resource "aws_codepipeline" "pipeline" {
             },
             {
               "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
+              "value" : var.pipeline_buckets["artefacts_bucket"],
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
+              "name" : "TASK",
               "value" : "ansible",
               "type" : "PLAINTEXT"
             },
@@ -272,6 +357,11 @@ resource "aws_codepipeline" "pipeline" {
               "name" : "PACKAGE_NAME",
               "value" : "alfresco-terraform.tar",
               "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : var.pipeline_buckets["cache_bucket"],
+              "type" : "PLAINTEXT"
             }
           ]
         )
@@ -282,15 +372,15 @@ resource "aws_codepipeline" "pipeline" {
     name = format("%s-database-restore", each.key)
     action {
       name            = "database_apply"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
       run_order       = 1
       configuration = {
-        ProjectName   = var.projects["terraform"]
-        PrimarySource = "code"
+        ProjectName   = var.projects["apply"]
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -305,17 +395,22 @@ resource "aws_codepipeline" "pipeline" {
             },
             {
               "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
+              "value" : var.pipeline_buckets["artefacts_bucket"],
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
-              "value" : "build",
+              "name" : "TASK",
+              "value" : "apply",
               "type" : "PLAINTEXT"
             },
             {
               "name" : "PACKAGE_NAME",
               "value" : "alfresco-terraform.tar",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : var.pipeline_buckets["cache_bucket"],
               "type" : "PLAINTEXT"
             }
           ]
@@ -327,15 +422,15 @@ resource "aws_codepipeline" "pipeline" {
     name = format("%s-services-start", each.key)
     action {
       name            = "alfresco_apply"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
       run_order       = 1
       configuration = {
-        ProjectName   = var.projects["terraform"]
-        PrimarySource = "code"
+        ProjectName   = var.projects["apply"]
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -350,17 +445,22 @@ resource "aws_codepipeline" "pipeline" {
             },
             {
               "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
+              "value" : var.pipeline_buckets["artefacts_bucket"],
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
-              "value" : "build",
+              "name" : "TASK",
+              "value" : "apply",
               "type" : "PLAINTEXT"
             },
             {
               "name" : "PACKAGE_NAME",
               "value" : "alfresco-terraform.tar",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : var.pipeline_buckets["cache_bucket"],
               "type" : "PLAINTEXT"
             }
           ]
@@ -369,15 +469,15 @@ resource "aws_codepipeline" "pipeline" {
     }
     action {
       name            = "solr_apply"
-      input_artifacts = ["code"]
+      input_artifacts = ["package"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
       version         = "1"
       run_order       = 1
       configuration = {
-        ProjectName   = var.projects["terraform"]
-        PrimarySource = "code"
+        ProjectName   = var.projects["apply"]
+        PrimarySource = "package"
         EnvironmentVariables = jsonencode(
           [
             {
@@ -392,17 +492,22 @@ resource "aws_codepipeline" "pipeline" {
             },
             {
               "name" : "ARTEFACTS_BUCKET",
-              "value" : var.artefacts_bucket,
+              "value" : var.pipeline_buckets["artefacts_bucket"],
               "type" : "PLAINTEXT"
             },
             {
-              "name" : "ACTION_TYPE",
-              "value" : "build",
+              "name" : "TASK",
+              "value" : "apply",
               "type" : "PLAINTEXT"
             },
             {
               "name" : "PACKAGE_NAME",
               "value" : "alfresco-terraform.tar",
+              "type" : "PLAINTEXT"
+            },
+            {
+              "name" : "BUILDS_CACHE_BUCKET",
+              "value" : var.pipeline_buckets["cache_bucket"],
               "type" : "PLAINTEXT"
             }
           ]

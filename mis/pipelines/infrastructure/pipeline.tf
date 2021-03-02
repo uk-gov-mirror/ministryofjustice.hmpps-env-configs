@@ -17,6 +17,8 @@ module "delius-mis-dev" {
   }
   stages                   = local.mis_dev_infra_stages
   pre_stages               = local.pre_stages
+  test_stages              = local.smoke_stages
+  smoke_test_pipeline_name = "delius-mis-dev-${local.smoke_test_suffix}"
   environment_variables    = local.environment_variables
   pipeline_approval_config = {
     CustomData      = "Please review plans and approve to proceed?"
@@ -43,6 +45,8 @@ module "delius-auto-test" {
   }
   stages                   = local.autotest_infra_stages
   pre_stages               = local.pre_stages
+  test_stages              = local.smoke_stages
+  smoke_test_pipeline_name = "delius-auto-test-${local.smoke_test_suffix}"
   environment_variables    = local.environment_variables
   pipeline_approval_config = {
     CustomData      = "Please review plans and approve to proceed?"
@@ -68,6 +72,8 @@ module "delius-stage" {
   }
   stages                   = local.stage_infra_stages
   pre_stages               = local.pre_stages
+  test_stages              = local.smoke_stages
+  smoke_test_pipeline_name = "delius-stage-${local.smoke_test_suffix}"
   environment_variables    = local.environment_variables
   pipeline_approval_config = {
     CustomData      = "Please review plans and approve to proceed?"
@@ -93,6 +99,8 @@ module "delius-pre-prod" {
   }
   stages                   = local.preprod_infra_stages
   pre_stages               = local.pre_stages
+  test_stages              = local.smoke_stages
+  smoke_test_pipeline_name = "delius-pre-prod-${local.smoke_test_suffix}"
   environment_variables    = local.environment_variables
   pipeline_approval_config = {
     CustomData      = "Please review plans and approve to proceed?"
@@ -118,6 +126,8 @@ module "delius-prod" {
   }
   stages                   = local.prod_infra_stages
   pre_stages               = local.pre_stages
+  test_stages              = local.smoke_stages
+  smoke_test_pipeline_name = "delius-prod-${local.smoke_test_suffix}"
   environment_variables    = local.environment_variables
   pipeline_approval_config = {
     CustomData      = "Please review plans and approve to proceed?"
