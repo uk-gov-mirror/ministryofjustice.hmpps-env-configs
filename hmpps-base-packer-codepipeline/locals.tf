@@ -49,7 +49,9 @@ locals {
     "AmazonLinux2Jira"          = "${local.common_name}-amazonlinux2-jira"
     "AmazonLinux2Jira7"         = "${local.common_name}-amazonlinux2-jira7"
     "AmazonLinux2Jira712"       = "${local.common_name}-amazonlinux2-jira712"
+    "AmazonLinux2Jira713"       = "${local.common_name}-amazonlinux2-jira713"
     "AmazonLinux2Jira813"       = "${local.common_name}-amazonlinux2-jira813"
+    "AmazonLinux2Jira815"       = "${local.common_name}-amazonlinux2-jira815"
     "AmazonLinux2Jira857"       = "${local.common_name}-amazonlinux2-jira857"
     "AmazonLinux2JenkinsAgent"  = "${local.common_name}-amazonlinux2-jenkins-agent"
   }
