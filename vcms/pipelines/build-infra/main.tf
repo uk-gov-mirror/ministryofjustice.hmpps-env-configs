@@ -25,6 +25,7 @@ locals {
       name = "SecurityComponents"
       actions = {
         Keys             = "keys"
+        AcmAlerts        = "acm_alerts"
         SecurityGroups   = "security-groups"
       }
     },
