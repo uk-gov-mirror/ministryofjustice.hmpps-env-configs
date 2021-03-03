@@ -55,38 +55,31 @@ resource "aws_codepipeline" "pipeline" {
         ProjectName   = var.projects["version"]
         PrimarySource = "code"
         EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.pipeline_buckets["artefacts_bucket"],
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "tfpackage.tar",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "BUILDS_CACHE_BUCKET",
-              "value" : var.pipeline_buckets["cache_bucket"],
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "RELEASE_PKGS_PATH",
-              "value" : "projects",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "DEV_PIPELINE_NAME",
-              "value" : "codepipeline/alf-infra-build-alfresco-dev",
-              "type" : "PLAINTEXT"
-            }
-          ]
+          concat(
+            [
+              {
+                "name" : "ENVIRONMENT_NAME",
+                "value" : each.key,
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "RELEASE_PKGS_PATH",
+                "value" : "projects",
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "DEV_PIPELINE_NAME",
+                "value" : "codepipeline/alf-infra-build-alfresco-dev",
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "TASK",
+                "value" : "get_package",
+                "type" : "PLAINTEXT"
+              }
+            ],
+            local.environment_vars
+          )
         )
       }
     }
@@ -94,106 +87,84 @@ resource "aws_codepipeline" "pipeline" {
   stage {
     name = format("%s-services-stop", each.key)
     action {
-      name            = "alfresco_plan"
-      input_artifacts = ["package"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 1
+      name             = "alfresco_plan"
+      input_artifacts  = ["package"]
+      output_artifacts = ["alfresco_plan"]
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      version          = "1"
+      run_order        = 1
       configuration = {
         ProjectName   = var.projects["plan"]
         PrimarySource = "package"
         EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "COMPONENT",
-              "value" : "asg",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.pipeline_buckets["artefacts_bucket"],
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TASK",
-              "value" : "terraform_plan",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TF_VAR_restoring",
-              "value" : "enabled",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "BUILDS_CACHE_BUCKET",
-              "value" : var.pipeline_buckets["cache_bucket"],
-              "type" : "PLAINTEXT"
-            }
-          ]
+          concat(
+            [
+              {
+                "name" : "ENVIRONMENT_NAME",
+                "value" : each.key,
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "COMPONENT",
+                "value" : "asg",
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "TASK",
+                "value" : "terraform_plan",
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "TF_VAR_restoring",
+                "value" : "enabled",
+                "type" : "PLAINTEXT"
+              }
+            ],
+            local.environment_vars
+          )
         )
       }
     }
     action {
-      name            = "solr_plan"
-      input_artifacts = ["package"]
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      run_order       = 1
+      name             = "solr_plan"
+      input_artifacts  = ["package"]
+      output_artifacts = ["solr_plan"]
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      version          = "1"
+      run_order        = 1
       configuration = {
         ProjectName   = var.projects["plan"]
         PrimarySource = "package"
         EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "COMPONENT",
-              "value" : "solr",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.pipeline_buckets["artefacts_bucket"],
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TASK",
-              "value" : "terraform_plan",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TF_VAR_restoring",
-              "value" : "enabled",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "BUILDS_CACHE_BUCKET",
-              "value" : var.pipeline_buckets["cache_bucket"],
-              "type" : "PLAINTEXT"
-            }
-          ]
+          concat(
+            [
+              {
+                "name" : "ENVIRONMENT_NAME",
+                "value" : each.key,
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "COMPONENT",
+                "value" : "solr",
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "TASK",
+                "value" : "terraform_plan",
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "TF_VAR_restoring",
+                "value" : "enabled",
+                "type" : "PLAINTEXT"
+              }
+            ],
+            local.environment_vars
+          )
         )
       }
     }
@@ -210,7 +181,7 @@ resource "aws_codepipeline" "pipeline" {
     }
     action {
       name            = "alfresco_apply"
-      input_artifacts = ["package"]
+      input_artifacts = ["alfresco_plan"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -218,51 +189,39 @@ resource "aws_codepipeline" "pipeline" {
       run_order       = 3
       configuration = {
         ProjectName   = var.projects["apply"]
-        PrimarySource = "package"
+        PrimarySource = "alfresco_plan"
         EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "COMPONENT",
-              "value" : "asg",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.pipeline_buckets["artefacts_bucket"],
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TASK",
-              "value" : "terraform_apply",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TF_VAR_restoring",
-              "value" : "enabled",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "BUILDS_CACHE_BUCKET",
-              "value" : var.pipeline_buckets["cache_bucket"],
-              "type" : "PLAINTEXT"
-            }
-          ]
+          concat(
+            [
+              {
+                "name" : "ENVIRONMENT_NAME",
+                "value" : each.key,
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "COMPONENT",
+                "value" : "asg",
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "TASK",
+                "value" : "terraform_apply",
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "TF_VAR_restoring",
+                "value" : "enabled",
+                "type" : "PLAINTEXT"
+              }
+            ],
+            local.environment_vars
+          )
         )
       }
     }
     action {
       name            = "solr_apply"
-      input_artifacts = ["package"]
+      input_artifacts = ["solr_plan"]
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
@@ -270,45 +229,33 @@ resource "aws_codepipeline" "pipeline" {
       run_order       = 3
       configuration = {
         ProjectName   = var.projects["apply"]
-        PrimarySource = "package"
+        PrimarySource = "solr_plan"
         EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "COMPONENT",
-              "value" : "solr",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.pipeline_buckets["artefacts_bucket"],
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TASK",
-              "value" : "terraform_apply",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TF_VAR_restoring",
-              "value" : "enabled",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "BUILDS_CACHE_BUCKET",
-              "value" : var.pipeline_buckets["cache_bucket"],
-              "type" : "PLAINTEXT"
-            }
-          ]
+          concat(
+            [
+              {
+                "name" : "ENVIRONMENT_NAME",
+                "value" : each.key,
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "COMPONENT",
+                "value" : "solr",
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "TASK",
+                "value" : "terraform_apply",
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "TF_VAR_restoring",
+                "value" : "enabled",
+                "type" : "PLAINTEXT"
+              }
+            ],
+            local.environment_vars
+          )
         )
       }
     }
@@ -327,43 +274,31 @@ resource "aws_codepipeline" "pipeline" {
         ProjectName   = var.projects["ansible"]
         PrimarySource = "package"
         EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "COMPONENT",
-              "value" : "ansible/rds/delete_instance",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.pipeline_buckets["artefacts_bucket"],
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TASK",
-              "value" : "ansible",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "DELETE_DB_INSTANCE",
-              "value" : "yes",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "BUILDS_CACHE_BUCKET",
-              "value" : var.pipeline_buckets["cache_bucket"],
-              "type" : "PLAINTEXT"
-            }
-          ]
+          concat(
+            [
+              {
+                "name" : "ENVIRONMENT_NAME",
+                "value" : each.key,
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "COMPONENT",
+                "value" : "ansible/rds/delete_instance",
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "TASK",
+                "value" : "ansible",
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "DELETE_DB_INSTANCE",
+                "value" : "yes",
+                "type" : "PLAINTEXT"
+              }
+            ],
+            local.environment_vars
+          )
         )
       }
     }
@@ -382,38 +317,26 @@ resource "aws_codepipeline" "pipeline" {
         ProjectName   = var.projects["apply"]
         PrimarySource = "package"
         EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "COMPONENT",
-              "value" : "database",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.pipeline_buckets["artefacts_bucket"],
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TASK",
-              "value" : "apply",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "BUILDS_CACHE_BUCKET",
-              "value" : var.pipeline_buckets["cache_bucket"],
-              "type" : "PLAINTEXT"
-            }
-          ]
+          concat(
+            [
+              {
+                "name" : "ENVIRONMENT_NAME",
+                "value" : each.key,
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "COMPONENT",
+                "value" : "database",
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "TASK",
+                "value" : "apply",
+                "type" : "PLAINTEXT"
+              }
+            ],
+            local.environment_vars
+          )
         )
       }
     }
@@ -432,38 +355,26 @@ resource "aws_codepipeline" "pipeline" {
         ProjectName   = var.projects["apply"]
         PrimarySource = "package"
         EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "COMPONENT",
-              "value" : "asg",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.pipeline_buckets["artefacts_bucket"],
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TASK",
-              "value" : "apply",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "BUILDS_CACHE_BUCKET",
-              "value" : var.pipeline_buckets["cache_bucket"],
-              "type" : "PLAINTEXT"
-            }
-          ]
+          concat(
+            [
+              {
+                "name" : "ENVIRONMENT_NAME",
+                "value" : each.key,
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "COMPONENT",
+                "value" : "asg",
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "TASK",
+                "value" : "apply",
+                "type" : "PLAINTEXT"
+              }
+            ],
+            local.environment_vars
+          )
         )
       }
     }
@@ -479,38 +390,26 @@ resource "aws_codepipeline" "pipeline" {
         ProjectName   = var.projects["apply"]
         PrimarySource = "package"
         EnvironmentVariables = jsonencode(
-          [
-            {
-              "name" : "ENVIRONMENT_NAME",
-              "value" : each.key,
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "COMPONENT",
-              "value" : "solr",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "ARTEFACTS_BUCKET",
-              "value" : var.pipeline_buckets["artefacts_bucket"],
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "TASK",
-              "value" : "apply",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "PACKAGE_NAME",
-              "value" : "alfresco-terraform.tar",
-              "type" : "PLAINTEXT"
-            },
-            {
-              "name" : "BUILDS_CACHE_BUCKET",
-              "value" : var.pipeline_buckets["cache_bucket"],
-              "type" : "PLAINTEXT"
-            }
-          ]
+          concat(
+            [
+              {
+                "name" : "ENVIRONMENT_NAME",
+                "value" : each.key,
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "COMPONENT",
+                "value" : "solr",
+                "type" : "PLAINTEXT"
+              },
+              {
+                "name" : "TASK",
+                "value" : "apply",
+                "type" : "PLAINTEXT"
+              }
+            ],
+            local.environment_vars
+          )
         )
       }
     }
