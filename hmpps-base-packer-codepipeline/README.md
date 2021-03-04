@@ -8,8 +8,9 @@ export AWS_PROFILE=hmpps_eng
 # set other env vars
 export ENVIRONMENT_NAME=dev;
 # set env vars secrets
-export GITHUB_TOKEN=$(aws ssm get-parameters --names /jenkins/github/accesstoken --region eu-west-2 --with-decrypt | jq -r '.Parameters[0].Value')
-export TF_VAR_github_webhook_secret=$(aws ssm get-parameters --names /jenkins/github/github_webhook_secret/hmpps-base-packer --region eu-west-2 --with-decrypt | jq -r '.Parameters[0].Value')
+
+export GITHUB_TOKEN=$(aws ssm get-parameters --names /crossaccount/github/accesstoken --region eu-west-2 --with-decrypt | jq -r '.Parameters[0].Value')
+export TF_VAR_github_webhook_secret=$(aws ssm get-parameters --names /codepipeline/webhooks/secret --region eu-west-2 --with-decrypt | jq -r '.Parameters[0].Value')
 
 # run a terraform plan docker container
 # Note: run.sh has the params:

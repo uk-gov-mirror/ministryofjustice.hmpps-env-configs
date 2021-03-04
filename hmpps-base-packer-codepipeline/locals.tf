@@ -71,17 +71,23 @@ locals {
   # CodePipeline - Windows AMI Projects
   #=====================================
   codebuild_project_names_stage_1_windows = {
-    "WindowsBase"      = "${local.common_name}-windows-base"
+    "WindowsBase"      = "${local.common_name}-windows-base",
+    "WindowsBase2019"      = "${local.common_name}-windows-base-2019"
   }
 
   codebuild_project_names_stage_2_windows = {
     "WindowsJenkinsAgent" = "${local.common_name}-windows-jenkins-agent"
     "WindowsMISNart"      = "${local.common_name}-windows-misnart"
+    "WindowsMISNart2019"  = "${local.common_name}-windows-misnart-2019"
   }
 
   codebuild_project_names_stage_3_windows = {
-    "WindowsMISNartBCS" = "${local.common_name}-windows-misnart-bcs"
-    "WindowsMISNartBFS" = "${local.common_name}-windows-misnart-bfs"
+    "WindowsMISNartBCS"     = "${local.common_name}-windows-misnart-bcs"
+    "WindowsMISNartBFS"     = "${local.common_name}-windows-misnart-bfs"
+    "WindowsMISNartBCS2019" = "${local.common_name}-windows-misnart-bcs-2019"
+    "WindowsMISNartBPS2019" = "${local.common_name}-windows-misnart-bps-2019"
+    "WindowsMISNartBWS2019" = "${local.common_name}-windows-misnart-bws-2019"
+    "WindowsMISNartDIS2019" = "${local.common_name}-windows-misnart-dis-2019"
   }
 
   codebuild_project_names_all_windows = merge(
