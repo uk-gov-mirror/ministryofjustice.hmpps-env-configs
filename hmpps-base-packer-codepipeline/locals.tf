@@ -5,7 +5,7 @@
 
 locals {
 
-   account_id  = data.aws_caller_identity.current.account_id
+  account_id = data.aws_caller_identity.current.account_id
 
   #=====================================
   # CodePipeline - Linux AMI Projects
@@ -20,21 +20,21 @@ locals {
   codepipeline_builder_role = data.terraform_remote_state.common.outputs.packerbuilder_info["iam_role_arn_codepipeline"]
 
   code_stage = {
-      action  = {
-        name             = "Code"
-        category         = "Source"
-        owner            = "ThirdParty"
-        provider         = "GitHub"
-        version          = "1"
-        output_artifacts = ["github_source"]
-        namespace        = "SourceVariables"
-        configuration = {
-          Owner                = "ministryofjustice"
-          Repo                 = "hmpps-base-packer"
-          Branch               = "master"
-          PollForSourceChanges = true
-        }
+    action = {
+      name             = "Code"
+      category         = "Source"
+      owner            = "ThirdParty"
+      provider         = "GitHub"
+      version          = "1"
+      output_artifacts = ["github_source"]
+      namespace        = "SourceVariables"
+      configuration = {
+        Owner                = "ministryofjustice"
+        Repo                 = "hmpps-base-packer"
+        Branch               = "master"
+        PollForSourceChanges = true
       }
+    }
   }
 
   codebuild_project_names_stage_1_linux = {
@@ -45,15 +45,15 @@ locals {
   }
 
   codebuild_project_names_stage_2_linux = {
-    "Centos7Docker"             = "${local.common_name}-centos7-docker"
-    "AmazonLinux2Jira"          = "${local.common_name}-amazonlinux2-jira"
-    "AmazonLinux2Jira7"         = "${local.common_name}-amazonlinux2-jira7"
-    "AmazonLinux2Jira712"       = "${local.common_name}-amazonlinux2-jira712"
-    "AmazonLinux2Jira713"       = "${local.common_name}-amazonlinux2-jira713"
-    "AmazonLinux2Jira813"       = "${local.common_name}-amazonlinux2-jira813"
-    "AmazonLinux2Jira815"       = "${local.common_name}-amazonlinux2-jira815"
-    "AmazonLinux2Jira857"       = "${local.common_name}-amazonlinux2-jira857"
-    "AmazonLinux2JenkinsAgent"  = "${local.common_name}-amazonlinux2-jenkins-agent"
+    "Centos7Docker"            = "${local.common_name}-centos7-docker"
+    "AmazonLinux2Jira"         = "${local.common_name}-amazonlinux2-jira"
+    "AmazonLinux2Jira7"        = "${local.common_name}-amazonlinux2-jira7"
+    "AmazonLinux2Jira712"      = "${local.common_name}-amazonlinux2-jira712"
+    "AmazonLinux2Jira713"      = "${local.common_name}-amazonlinux2-jira713"
+    "AmazonLinux2Jira813"      = "${local.common_name}-amazonlinux2-jira813"
+    "AmazonLinux2Jira815"      = "${local.common_name}-amazonlinux2-jira815"
+    "AmazonLinux2Jira857"      = "${local.common_name}-amazonlinux2-jira857"
+    "AmazonLinux2JenkinsAgent" = "${local.common_name}-amazonlinux2-jenkins-agent"
   }
 
   codebuild_project_names_stage_3_linux = {
@@ -71,8 +71,8 @@ locals {
   # CodePipeline - Windows AMI Projects
   #=====================================
   codebuild_project_names_stage_1_windows = {
-    "WindowsBase"      = "${local.common_name}-windows-base",
-    "WindowsBase2019"      = "${local.common_name}-windows-base-2019"
+    "WindowsBase"     = "${local.common_name}-windows-base",
+    "WindowsBase2019" = "${local.common_name}-windows-base-2019"
   }
 
   codebuild_project_names_stage_2_windows = {
@@ -110,14 +110,14 @@ locals {
   queued_timeout = "30"
   service_role   = data.terraform_remote_state.common.outputs.codebuild_info["iam_role_arn_packer_ami_builder"]
 
-  region         = var.region
-  tags           = var.tags
+  region = var.region
+  tags   = var.tags
 
   #======================
   # CodeBuild - Logs
   #======================
 
-  group_name  = data.terraform_remote_state.common.outputs.codebuild_info["log_group"]
+  group_name = data.terraform_remote_state.common.outputs.codebuild_info["log_group"]
   // stream_name = "hmpps-base-packer-ami-bake"
 
   #======================
@@ -131,48 +131,48 @@ locals {
   # CodeBuild - Source
   #======================
   build_source = {
-    type          = "CODEPIPELINE"
+    type = "CODEPIPELINE"
   }
 
   #======================
   # CodeBuild - Environment
   #======================
   build_environment_spec = {
-    compute_type    = "BUILD_GENERAL1_MEDIUM"  # =https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-compute-types.html
+    compute_type = "BUILD_GENERAL1_MEDIUM" # =https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-compute-types.html
     images = {
-      packer    = data.terraform_remote_state.common.outputs.codebuild_info["packerbuilder_image"]
+      packer = data.terraform_remote_state.common.outputs.codebuild_info["packerbuilder_image"]
     }
-    type = "LINUX_CONTAINER"
+    type                        = "LINUX_CONTAINER"
     image_pull_credentials_type = "SERVICE_ROLE"
     privileged_mode             = false
 
     environment_variables = [
       {
-        key = "AuthorDate"
+        key   = "AuthorDate"
         value = "#{SourceVariables.AuthorDate}"
       },
       {
-        key="BRANCH_NAME"
+        key   = "BRANCH_NAME"
         value = "#{SourceVariables.BranchName}"
       },
       {
-        key="CommitId"
+        key   = "CommitId"
         value = "#{SourceVariables.CommitId}"
       },
       {
-        key="CommitterDate"
+        key   = "CommitterDate"
         value = "#{SourceVariables.CommitterDate}"
       },
       {
-        key="ARTIFACT_BUCKET"
+        key   = "ARTIFACT_BUCKET"
         value = "tf-eu-west-2-hmpps-eng-dev-config-s3bucket"
       },
       {
-        key="ZAIZI_BUCKET"
+        key   = "ZAIZI_BUCKET"
         value = "tf-eu-west-2-hmpps-eng-dev-artefacts-s3bucket"
       },
       {
-        key="AWS_REGION"
+        key   = "AWS_REGION"
         value = var.region
       }
     ]
@@ -183,7 +183,7 @@ locals {
   # CodeBuild - VPC Config
   #=======================
   vpc_config = {
-    vpc_id      = data.terraform_remote_state.vpc.outputs.vpc_id
+    vpc_id = data.terraform_remote_state.vpc.outputs.vpc_id
 
     subnet_ids = [
       data.terraform_remote_state.vpc.outputs.private-subnet-az1,

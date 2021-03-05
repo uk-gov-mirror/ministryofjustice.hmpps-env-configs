@@ -9,14 +9,14 @@ resource "aws_codebuild_project" "hmpps_base_packer_amis" {
   build_timeout  = local.build_timeout
   queued_timeout = local.queued_timeout
 
-  service_role   = local.service_role
+  service_role = local.service_role
   tags = merge(
     local.tags,
     {
       "Name" = each.value
     },
   )
- 
+
   artifacts {
     type = local.build_artifacts.type
   }
@@ -27,7 +27,7 @@ resource "aws_codebuild_project" "hmpps_base_packer_amis" {
     type                        = local.build_environment_spec.type
     image_pull_credentials_type = local.build_environment_spec.image_pull_credentials_type
     privileged_mode             = true
-    
+
     # dynamic "environment_variable" {
     #   for_each = local.build_environment_spec.environment_variables
     #   content {
@@ -44,7 +44,7 @@ resource "aws_codebuild_project" "hmpps_base_packer_amis" {
     }
   }
 
-  source {  
+  source {
     type      = local.build_source.type
     buildspec = "buildspec_${each.key}.yml"
   }

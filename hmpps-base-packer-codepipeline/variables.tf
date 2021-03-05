@@ -21,8 +21,8 @@ variable "alf_cloudwatch_log_retention" {
 variable "code_build" {
   type = map(string)
   default = {
-    github_org          = "ministryofjustice"
-    infra_repo          = "hmpps-delius-alfresco-shared-terraform"
+    github_org = "ministryofjustice"
+    infra_repo = "hmpps-delius-alfresco-shared-terraform"
     # jenkins_token_ssm   = "/jenkins/github/accesstoken"
     artifact_expiration = 90
     terraform_image     = "mojdigitalstudio/hmpps-terraform-builder-lite:latest"

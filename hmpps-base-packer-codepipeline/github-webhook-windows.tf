@@ -13,7 +13,7 @@ resource "github_repository_webhook" "github_repository_webhook_hmpps_base_packe
     url          = aws_codepipeline_webhook.codepipeline_webhooks_hmpps_base_packer_windows.url
     content_type = "json"
     insecure_ssl = false
-       secret = var.github_webhook_secret  
+    secret       = var.github_webhook_secret
   }
 
   // https://developer.github.com/webhooks/event-payloads/
@@ -28,7 +28,7 @@ resource "aws_codepipeline_webhook" "codepipeline_webhooks_hmpps_base_packer_win
   target_pipeline = aws_codepipeline.codepipeline_hmpps_base_packer_windows.name
 
   authentication_configuration {
-    secret_token = var.github_webhook_secret  # TF_VAR_github_webhook_secret
+    secret_token = var.github_webhook_secret # TF_VAR_github_webhook_secret
   }
 
   filter {
