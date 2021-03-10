@@ -88,6 +88,7 @@ locals {
     "WindowsMISNartBPS2019" = "${local.common_name}-windows-misnart-bps-2019"
     "WindowsMISNartBWS2019" = "${local.common_name}-windows-misnart-bws-2019"
     "WindowsMISNartDIS2019" = "${local.common_name}-windows-misnart-dis-2019"
+    "WindowsMISNartADM2019" = "${local.common_name}-windows-misnart-adm-2019"
   }
 
   codebuild_project_names_all_windows = merge(
