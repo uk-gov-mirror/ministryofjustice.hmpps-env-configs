@@ -71,8 +71,9 @@ locals {
   # CodePipeline - Windows AMI Projects
   #=====================================
   codebuild_project_names_stage_1_windows = {
-    "WindowsBase"     = "${local.common_name}-windows-base",
-    "WindowsBase2019" = "${local.common_name}-windows-base-2019"
+    "WindowsBase"            = "${local.common_name}-windows-base",
+    "WindowsBase2019"        = "${local.common_name}-windows-base-2019"
+    "WindowsBase2019Ansible" = "${local.common_name}-windows-base-2019-ansible"
   }
 
   codebuild_project_names_stage_2_windows = {
