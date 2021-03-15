@@ -39,8 +39,6 @@ locals {
       }
   }
 
-
-
 codebuild_project_names_stage_1_docker = {
     "base"                     = "${local.common_name}-base"
     "nginx"                    = "${local.common_name}-nginx"
@@ -66,6 +64,7 @@ codebuild_project_names_stage_1_docker = {
 
   codebuild_project_names_stage_3_docker = {
     "packer-builder"         = "${local.common_name}-packer-builder"
+    "packer-builder-1-7-0"   = "${local.common_name}-packer-builder-1-7-0"
     "terraform-builder-lite" = "${local.common_name}-terraform-builder-lite"
   }
 
