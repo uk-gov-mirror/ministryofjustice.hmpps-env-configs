@@ -11,6 +11,7 @@ output "codebuild_info" {
     packerbuilder_instance_security_group = aws_security_group.packerbuilder_instance_security_group.id
     packerbuilder_client_security_group   = aws_security_group.packerbuilder_client_security_group.id
     packerbuilder_image                   = local.images["packer"]
+    packerbuilder_image_latest            = local.images["packer_latest"]
   }
 }
 

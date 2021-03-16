@@ -41,6 +41,7 @@ variable "code_build" {
     terraform_image     = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/terraform-builder-lite"
     ansible3_image      = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/ansible-builder-python-3"
     ansible2_image      = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/ansible-builder"
+    packer_image_latest = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/packer-builder-1-7-0"
     packer_image        = "895523100917.dkr.ecr.eu-west-2.amazonaws.com/hmpps/packer-builder:0.33.0"
     lambda_version      = "0.0.2"
   }

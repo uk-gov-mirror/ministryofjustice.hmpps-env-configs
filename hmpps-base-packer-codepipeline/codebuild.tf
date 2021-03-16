@@ -14,7 +14,7 @@ resource "aws_codebuild_project" "hmpps_base_packer_amis" {
     local.tags,
     {
       "Name" = each.value
-    },
+    }
   )
 
   artifacts {

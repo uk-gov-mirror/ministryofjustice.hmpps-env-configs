@@ -113,7 +113,14 @@ locals {
   service_role   = data.terraform_remote_state.common.outputs.codebuild_info["iam_role_arn_packer_ami_builder"]
 
   region = var.region
-  tags   = var.tags
+  # tags   = var.tags
+  tags = merge(
+    var.tags,
+    {
+      "source-code" = "https://github.com/ministryofjustice/hmpps-engineering-pipelines"
+    }
+  ) 
+
 
   #======================
   # CodeBuild - Logs

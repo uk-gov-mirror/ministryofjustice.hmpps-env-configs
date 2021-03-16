@@ -25,10 +25,11 @@ locals {
   )
   compute_type = "BUILD_GENERAL1_SMALL"
   images = {
-    terraform = var.code_build["terraform_image"]
-    ansible3  = var.code_build["ansible3_image"]
-    ansible2  = var.code_build["ansible2_image"]
-    packer    = var.code_build["packer_image"]
+    terraform     = var.code_build["terraform_image"]
+    ansible3      = var.code_build["ansible3_image"]
+    ansible2      = var.code_build["ansible2_image"]
+    packer        = var.code_build["packer_image"]
+    packer_latest = var.code_build["packer_image_latest"]
   }
   type = "LINUX_CONTAINER"
 }
